@@ -3,7 +3,7 @@ import json
 import logging as lg
 from pathlib import Path
 
-from common import get_aws_client
+from botobuddy.common import get_aws_client
 
 
 def import_commands(parent):

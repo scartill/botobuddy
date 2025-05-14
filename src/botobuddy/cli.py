@@ -2,9 +2,9 @@ import click
 import logging as lg
 import sys
 
-import s3
-import dynamo
-import route53
+import botobuddy.s3 as s3
+import botobuddy.dynamo as dynamo
+import botobuddy.route53 as route53
 
 
 def setup_logging(verbose):
@@ -29,7 +29,7 @@ def cli(ctx, verbose, profile, region):
     lg.info(f'Using AWS region: {ctx.obj.get("region")}')
 
 
-if __name__ == '__main__':
+def main():
     try:
         s3.import_commands(cli)
         dynamo.import_commands(cli)
@@ -40,3 +40,7 @@ if __name__ == '__main__':
     except UserWarning as e:
         lg.error(e)
         sys.exit(1)
+
+
+if __name__ == '__main__':
+    main()

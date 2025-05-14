@@ -1,6 +1,7 @@
 import click
 import logging as lg
-from common import get_aws_client
+
+from botobuddy.common import get_aws_client
 
 
 def import_commands(parent):
