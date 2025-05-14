@@ -19,9 +19,10 @@ def route53_group():
 @click.pass_obj
 @click.argument('hosted_zone_id')
 def export_hosted_zone(obj, hosted_zone_id):
+    '''Export all resource record sets from a specified hosted zone'''
     client = get_aws_client('route53', obj)
     response = client.list_resource_record_sets(HostedZoneId=hosted_zone_id)  # type: ignore
-    print(json.dumps(response['ResourceRecordSets'], indent=2))
+    click.echo(json.dumps(response['ResourceRecordSets'], indent=2))
 
 
 @route53_group.command()
@@ -29,13 +30,11 @@ def export_hosted_zone(obj, hosted_zone_id):
 @click.option('--filename', '-f', required=True, type=str)
 @click.argument('hosted_zone_id')
 def import_hosted_zone(obj, hosted_zone_id, filename):
+    '''Import resource record sets into a specified hosted zone from a file, skipping NS and SOA records'''
     client = get_aws_client('route53', obj)
     records = json.loads(Path(filename).read_text())
 
-    lg.info(
-        f'Importing {len(records)} records to {hosted_zone_id}'
-        ' (skipping NS and SOA)'
-    )
+    lg.info(f'Importing {len(records)} records to {hosted_zone_id}')
 
     for record in records:
         if record['Type'] in ['NS', 'SOA']:
