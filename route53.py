@@ -20,7 +20,7 @@ def route53_group():
 @click.argument('hosted_zone_id')
 def export_hosted_zone(obj, hosted_zone_id):
     client = get_aws_client('route53', obj)
-    response = client.list_resource_record_sets(HostedZoneId=hosted_zone_id)
+    response = client.list_resource_record_sets(HostedZoneId=hosted_zone_id)  # type: ignore
     print(json.dumps(response['ResourceRecordSets'], indent=2))
 
 
@@ -41,7 +41,7 @@ def import_hosted_zone(obj, hosted_zone_id, filename):
         if record['Type'] in ['NS', 'SOA']:
             continue
 
-        client.change_resource_record_sets(
+        client.change_resource_record_sets(  # type: ignore
             HostedZoneId=hosted_zone_id,
             ChangeBatch={'Changes': [
                 {'Action': 'UPSERT', 'ResourceRecordSet': record}
