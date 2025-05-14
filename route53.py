@@ -1,32 +1,35 @@
-import boto3
 import click
 import json
 import logging as lg
 from pathlib import Path
 
+from common import get_aws_client
+
+
+def import_commands(parent):
+    parent.add_command(route53_group)
+
 
 @click.group()
-@click.option('--profile', '-p', default='default')
-@click.pass_context
-def cli(ctx, profile):
-    ctx.ensure_object(dict)
-    lg.info(f'Using profile: {profile}')
-    boto3.setup_default_session(profile_name=profile)
+def route53_group():
+    pass
 
 
-@cli.command()
+@route53_group.command()
+@click.pass_obj
 @click.argument('hosted_zone_id')
-def export_hosted_zone(hosted_zone_id):
-    client = boto3.client('route53')
+def export_hosted_zone(obj, hosted_zone_id):
+    client = get_aws_client('route53', obj)
     response = client.list_resource_record_sets(HostedZoneId=hosted_zone_id)
     print(json.dumps(response['ResourceRecordSets'], indent=2))
 
 
-@cli.command()
+@route53_group.command()
+@click.pass_obj
 @click.option('--filename', '-f', required=True, type=str)
 @click.argument('hosted_zone_id')
-def import_hosted_zone(hosted_zone_id, filename):
-    client = boto3.client('route53')
+def import_hosted_zone(obj, hosted_zone_id, filename):
+    client = get_aws_client('route53', obj)
     records = json.loads(Path(filename).read_text())
 
     lg.info(
@@ -44,16 +47,3 @@ def import_hosted_zone(hosted_zone_id, filename):
                 {'Action': 'UPSERT', 'ResourceRecordSet': record}
             ]}
         )
-
-
-cli.add_command(export_hosted_zone)
-cli.add_command(import_hosted_zone)
-
-
-def main():
-    lg.basicConfig(level=lg.INFO)
-    cli()
-
-
-if __name__ == '__main__':
-    main()

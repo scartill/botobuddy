@@ -1,7 +1,17 @@
 import boto3
 
 
-def get_aws_client(service, region=None, profile=None):
+def get_aws_client(service, obj, resource=False):
     '''Create and return an AWS client with optional profile and region'''
+    profile = obj.get('profile')
+    region = obj.get('region')
     session = boto3.Session(profile_name=profile) if profile else boto3.Session()
-    return session.client(service, region_name=region) if region else session.client(service)
+    params = {'service': service}
+
+    if region:
+        params['region_name'] = region
+
+    if resource:
+        return session.resource(**params)
+    else:
+        return session.client(**params)
