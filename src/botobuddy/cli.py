@@ -37,7 +37,7 @@ def main():
         cli()
         sys.exit(0)
 
-    except UserWarning as e:
+    except Exception as e:
         lg.error(e)
         sys.exit(1)
 

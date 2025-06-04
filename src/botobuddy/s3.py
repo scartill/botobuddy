@@ -28,7 +28,7 @@ def delete_bucket_cmd(obj, bucket_name):
         delete_bucket(client, bucket_name)
 
     except Exception as e:
-        raise UserWarning('Error deleting bucket') from e
+        raise UserWarning(f'Error deleting bucket {bucket_name} {e}') from e
 
 
 def delete_bucket_contents(client, bucket_name):
@@ -92,10 +92,7 @@ def delete_bucket(client, bucket_name):
     Deletes the specified S3 bucket after emptying it
     '''
 
-    try:
-        # Delete the bucket
-        client.delete_bucket(Bucket=bucket_name)
-        lg.info(f'Bucket {bucket_name} has been deleted successfully')
-
-    except Exception as e:
-        raise UserWarning('Error deleting bucket') from e
+    # Delete the bucket
+    lg.info(f'Deleting bucket: {bucket_name}')
+    client.delete_bucket(Bucket=bucket_name)
+    lg.info(f'Bucket {bucket_name} has been deleted successfully')

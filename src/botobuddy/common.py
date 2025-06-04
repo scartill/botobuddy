@@ -5,13 +5,18 @@ def get_aws_client(service, obj, resource=False):
     '''Create and return an AWS client with optional profile and region'''
     profile = obj.get('profile')
     region = obj.get('region')
-    session = boto3.Session(profile_name=profile) if profile else boto3.Session()
-    params = {'service': service}
+
+    params = {}
+
+    if profile:
+        params['profile_name'] = profile
 
     if region:
         params['region_name'] = region
 
+    session = boto3.Session(**params)
+
     if resource:
-        return session.resource(**params)
+        return session.resource(service)
     else:
-        return session.client(**params)
+        return session.client(service)
