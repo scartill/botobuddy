@@ -1,12 +1,5 @@
 # A Collection of Extension Functions Based on Boto3
 
-## Development Environment Quickstart
-
-```pwsh
-uv sync
-uv run cli.py --help
-```
-
 ## Supported Commands
 
 ### DynamoDB Commands
@@ -18,3 +11,10 @@ uv run cli.py --help
 ### Route 53 Commands
 - **export-hosted-zone**: Export all resource record sets from a specified hosted zone.
 - **import-hosted-zone**: Import resource record sets into a specified hosted zone from a file, skipping NS and SOA records.
+
+## Development Environment Quickstart
+
+```pwsh
+uv sync
+uv run botobuddy --help
+```
