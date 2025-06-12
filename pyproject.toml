@@ -1,6 +1,6 @@
 [project]
 name = "botobuddy"
-version = "0.0.0"
+version = "0.1.0"
 description = "A Collection of Extension Functions Based on Boto3"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -8,6 +8,8 @@ requires-python = ">=3.12"
 dependencies = [
     "boto3>=1.38.15",
     "click>=8.2.0",
+    "randomname>=0.2.1",
+    "types-boto3[essential,route53,sts]>=1.38.35",
 ]
 
 [project.scripts]

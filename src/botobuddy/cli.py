@@ -5,6 +5,7 @@ import sys
 import botobuddy.s3 as s3
 import botobuddy.dynamo as dynamo
 import botobuddy.route53 as route53
+import botobuddy.auth as auth
 
 
 def setup_logging(verbose):
@@ -15,18 +16,13 @@ def setup_logging(verbose):
 @click.option('--verbose', is_flag=True, help='Enable debug logging')
 @click.option('--profile', help='AWS profile name to use')
 @click.option('--region', help='AWS region to use')
+@click.option('--assume-role', help='AWS role ARN to assume')
 @click.pass_context
-def cli(ctx, verbose, profile, region):
+def cli(ctx, verbose, **kwargs):
     '''Extended AWS Operations CLI'''
     setup_logging(verbose)
-
-    # Create a context object to pass to subcommands
     ctx.ensure_object(dict)
-    ctx.obj['profile'] = profile
-    lg.info(f'Using AWS profile: {ctx.obj.get("profile")}')
-
-    ctx.obj['region'] = region
-    lg.info(f'Using AWS region: {ctx.obj.get("region")}')
+    ctx.obj.update(kwargs)
 
 
 def main():
@@ -34,6 +30,7 @@ def main():
         s3.import_commands(cli)
         dynamo.import_commands(cli)
         route53.import_commands(cli)
+        auth.import_commands(cli)
         cli()
         sys.exit(0)
 

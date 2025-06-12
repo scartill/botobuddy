@@ -1,5 +1,6 @@
 import click
 import logging as lg
+from urllib.parse import urlparse
 
 from botobuddy.common import get_aws_client
 
@@ -29,6 +30,25 @@ def delete_bucket_cmd(obj, bucket_name):
 
     except Exception as e:
         raise UserWarning(f'Error deleting bucket {bucket_name} {e}') from e
+
+
+@s3_group.command(name='ls')
+@click.argument('s3_path')
+@click.pass_obj
+def ls_cmd(obj, s3_path):
+    '''List all objects in an S3 bucket'''
+    client = get_aws_client('s3', obj)
+    parsed_url = urlparse(s3_path)
+    bucket_name = parsed_url.netloc
+    key_prefix = parsed_url.path.lstrip('/')
+    paginator = client.get_paginator('list_objects_v2')  # type: ignore
+
+    page_iterator = paginator.paginate(Bucket=bucket_name, Prefix=key_prefix)
+
+    for page in page_iterator:
+        if 'Contents' in page:
+            for obj in page['Contents']:
+                lg.info(obj['Key'])  # type: ignore
 
 
 def delete_bucket_contents(client, bucket_name):
