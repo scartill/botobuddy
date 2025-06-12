@@ -36,8 +36,16 @@ def delete_bucket_cmd(obj, bucket_name):
 @click.argument('s3_path')
 @click.pass_obj
 def ls_cmd(obj, s3_path):
-    '''List all objects in an S3 bucket'''
     client = get_aws_client('s3', obj)
+
+    def print_object(item):
+        lg.info(item['Key'])  # type: ignore
+
+    list_all_objects(client, s3_path, print_object)
+
+
+def list_all_objects(client, s3_path, on_object):
+    '''List all objects in an S3 bucket and call on_object for each'''
     parsed_url = urlparse(s3_path)
     bucket_name = parsed_url.netloc
     key_prefix = parsed_url.path.lstrip('/')
@@ -48,7 +56,7 @@ def ls_cmd(obj, s3_path):
     for page in page_iterator:
         if 'Contents' in page:
             for obj in page['Contents']:
-                lg.info(obj['Key'])  # type: ignore
+                on_object(obj)
 
 
 def delete_bucket_contents(client, bucket_name):
