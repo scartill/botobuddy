@@ -1,8 +1,13 @@
 import click
 import logging as lg
 from urllib.parse import urlparse
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
-from botobuddy.common import get_aws_client
+from boto3.s3.transfer import TransferConfig
+from types_boto3_s3 import S3Client
+
+from botobuddy.common import get_s3_client
 
 
 def import_commands(parent):
@@ -20,7 +25,7 @@ def s3_group():
 def delete_bucket_cmd(obj, bucket_name):
     '''Clean and delete an S3 bucket completely'''
     try:
-        client = get_aws_client('s3', obj)
+        client = get_s3_client(obj)
 
         # First empty the bucket
         delete_bucket_contents(client, bucket_name)
@@ -36,7 +41,7 @@ def delete_bucket_cmd(obj, bucket_name):
 @click.argument('s3_path')
 @click.pass_obj
 def ls_cmd(obj, s3_path):
-    client = get_aws_client('s3', obj)
+    client = get_s3_client(obj)
 
     def print_object(item):
         lg.info(item['Key'])  # type: ignore
@@ -44,14 +49,11 @@ def ls_cmd(obj, s3_path):
     list_all_objects(client, s3_path, print_object)
 
 
-def list_all_objects(client, s3_path, on_object):
+def list_all_objects(client: S3Client, s3_path: str, on_object):
     '''List all objects in an S3 bucket and call on_object for each'''
-    parsed_url = urlparse(s3_path)
-    bucket_name = parsed_url.netloc
-    key_prefix = parsed_url.path.lstrip('/')
+    s3_uri = S3Uri(s3_path)
     paginator = client.get_paginator('list_objects_v2')  # type: ignore
-
-    page_iterator = paginator.paginate(Bucket=bucket_name, Prefix=key_prefix)
+    page_iterator = paginator.paginate(Bucket=s3_uri.bucket, Prefix=s3_uri.path)
 
     for page in page_iterator:
         if 'Contents' in page:
@@ -124,3 +126,76 @@ def delete_bucket(client, bucket_name):
     lg.info(f'Deleting bucket: {bucket_name}')
     client.delete_bucket(Bucket=bucket_name)
     lg.info(f'Bucket {bucket_name} has been deleted successfully')
+
+
+class S3Uri:
+    def __init__(self, s3_uri: str):
+        self.s3_uri = s3_uri
+        self.parsed_uri = urlparse(s3_uri)
+        self.bucket = self.parsed_uri.netloc
+        self.path = self.parsed_uri.path.lstrip('/')
+        self.filename = self.parsed_uri.path.split('/')[-1]
+        self.parent_uri = 's3://' + self.bucket + '/' + '/'.join(self.path.split('/')[:-1])
+
+    def __str__(self):
+        return self.s3_uri
+
+
+def fast_download_s3_files(
+    client: S3Client,
+    targets: list[tuple[str, str, str]],
+    skip_existing: bool = False,
+    create_folders: bool = True,
+    concurrency: int = 100
+):
+    '''Download a list of files from S3 in parallel.
+
+    Args:
+        targets: List of tuples containing (bucket, key, local_path)
+        skip_existing: Skip files that already exist locally
+        create_folders: Create the folders for the files
+    '''
+
+    config = {
+        'transfer_config': TransferConfig(
+            max_concurrency=concurrency,
+            use_threads=True
+        )
+    }
+
+    lg.info(f'Downloading {len(targets)} files')
+
+    if create_folders:
+        folders = set()
+
+        for target in targets:
+            folders.add(Path(target[2]).parent)
+
+        for folder in folders:
+            lg.info(f'Creating folder {folder}')
+            folder.mkdir(parents=True, exist_ok=True)
+
+    def download_file(bucket_name, key, local_path):
+        if skip_existing and Path(local_path).exists():
+            return f"Skipping {key} because it already exists"
+
+        print(f"Downloading {key} to {local_path}")
+        client.download_file(
+            bucket_name, key, local_path,
+            Config=config['transfer_config']
+        )
+
+        return f"Successfully downloaded {key}"
+
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        futures = [
+            executor.submit(
+                download_file,
+                target[0],
+                target[1],
+                target[2],
+            ) for target in targets
+        ]
+
+        for future in futures:
+            lg.info(future.result())
