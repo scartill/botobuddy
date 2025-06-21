@@ -1,6 +1,6 @@
 # A Collection of Extension Functions Based on Boto3
 
-## Supported Commands
+## Supported CLI Commands
 
 ### DynamoDB Commands
 - **truncate-table**: Truncate a DynamoDB table by deleting all its items.
@@ -12,6 +12,11 @@
 ### Route 53 Commands
 - **export-hosted-zone**: Export all resource record sets from a specified hosted zone.
 - **import-hosted-zone**: Import resource record sets into a specified hosted zone from a file, skipping NS and SOA records.
+
+
+### SageMaker Commands
+- **human-effort**: Generate a report on the human effort that a SageMaker job required.
+
 
 ## Development Environment Quickstart
 
