@@ -142,11 +142,11 @@ class S3Uri:
 
 
 def fast_download_s3_files(
-    obj: dict,
-    targets: list[tuple[str, str, str]],
+    targets: list[tuple[str, str, str | Path]],
     skip_existing: bool = False,
     create_folders: bool = True,
-    concurrency: int = 100
+    concurrency: int = 100,
+    session_config: dict = {}
 ):
     '''Download a list of files from S3 in parallel.
 
@@ -154,17 +154,18 @@ def fast_download_s3_files(
         targets: List of tuples containing (bucket, key, local_path)
         skip_existing: Skip files that already exist locally
         create_folders: Create the folders for the files
+        concurrency: Number of concurrent downloads
+        session_config: Configuration for the AWS session (profile, region, etc.)
     '''
 
     boto_config = {
         'max_pool_connections': concurrency
     }
 
-    client = get_s3_client(obj, core_config=boto_config)
+    client = get_s3_client(session_config, core_config=boto_config)
 
     config = {
         'transfer_config': TransferConfig(
-            # max_concurrency=concurrency,
             use_threads=False
         )
     }
@@ -182,6 +183,9 @@ def fast_download_s3_files(
             folder.mkdir(parents=True, exist_ok=True)
 
     def download_file(bucket_name, key, local_path):
+        if isinstance(local_path, Path):
+            local_path = str(local_path)
+
         if skip_existing and Path(local_path).exists():
             return f"Skipping {key} because it already exists"
 

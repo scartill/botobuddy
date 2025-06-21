@@ -1,7 +1,7 @@
 import click
 import logging as lg
 
-from botobuddy.common import get_aws_client
+from botobuddy.common import get_dynamodb_resource, DynamoDBServiceResource
 
 
 def import_commands(parent):
@@ -14,16 +14,16 @@ def dynamo_group():
 
 
 @dynamo_group.command(name='truncate-table')
-@click.argument('table_name')
 @click.pass_obj
+@click.argument('table_name')
 def truncate_table_cmd(obj, table_name):
     '''Truncate a DynamoDB table'''
-    client = get_aws_client('dynamodb', obj, resource=True)
+    client = get_dynamodb_resource(obj)
     counter = truncate_table(client, table_name)
     lg.info(f'Deleted {counter} items')
 
 
-def truncate_table(client, table_name):
+def truncate_table(client: DynamoDBServiceResource, table_name: str):
     '''Implementation to truncate a DynamoDB table'''
     table = client.Table(table_name)
 

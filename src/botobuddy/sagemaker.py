@@ -32,7 +32,7 @@ def sagemaker_group():
 @click.argument('job_name', type=str)
 def analyse_human_effort_command(obj, job_name, output_json, data_dir):
     data_dir = Path(data_dir)
-    report_data = analyse_human_effort(obj, job_name, data_dir)
+    report_data = analyse_human_effort(job_name, data_dir, session_config=obj)
 
     if output_json:
         click.echo(json.dumps(report_data, indent=4))
@@ -57,12 +57,13 @@ def analyse_human_effort_command(obj, job_name, output_json, data_dir):
         console.print(table)
 
 
-def analyse_human_effort(obj, job_name: str, data_dir: Path):
+def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict = {}):
     '''Analyse human effort for the labelling job.
 
     Args:
         job_name: Name of the labelling job
         data_dir: Path to the dataset directory
+        session_config: Configuration for the AWS session (profile, region, etc.)
 
     Returns:
         dict: A dictionary with the worker data:
@@ -75,8 +76,8 @@ def analyse_human_effort(obj, job_name: str, data_dir: Path):
         }
     '''
 
-    s3 = get_s3_client(obj)
-    sagemaker = get_sagemaker_client(obj)
+    s3 = get_s3_client(session_config)
+    sagemaker = get_sagemaker_client(session_config)
 
     try:
         response = sagemaker.describe_labeling_job(LabelingJobName=job_name)
@@ -108,7 +109,7 @@ def analyse_human_effort(obj, job_name: str, data_dir: Path):
 
                     targets.append((manifest_uri.bucket, key, target_file_path))
 
-        fast_download_s3_files(obj, targets, skip_existing=True)
+        fast_download_s3_files(targets, skip_existing=True, session_config=session_config)
 
         annotations = Counter()
         time_spent = Counter()
@@ -126,7 +127,7 @@ def analyse_human_effort(obj, job_name: str, data_dir: Path):
         workforce = sagemaker.describe_workforce(WorkforceName='default')
         user_pool_id = workforce['Workforce']['CognitoConfig']['UserPool']  # type: ignore
         lg.info(f'Using Cognito user pool ID: {user_pool_id}')
-        sub_to_email_mapping = get_sub_to_email_mapping(obj, user_pool_id)
+        sub_to_email_mapping = get_sub_to_email_mapping(user_pool_id, session_config)
 
         def worker_id_to_email(worker_id):
             if worker_id not in cognito_user_ids:
@@ -155,7 +156,7 @@ def analyse_human_effort(obj, job_name: str, data_dir: Path):
         raise UserWarning(f'Failed to analyse human effort for job {job_name}') from e
 
 
-def get_sub_to_email_mapping(obj, user_pool_id):
+def get_sub_to_email_mapping(user_pool_id: str, session_config: dict = {}):
     '''Generates a mapping from 'sub' (UUID) to email address for all users
     in a given AWS Cognito User Pool.
 
@@ -165,13 +166,14 @@ def get_sub_to_email_mapping(obj, user_pool_id):
 
     Args:
         user_pool_id (str): The ID of your Cognito User Pool.
+        session_config: Configuration for the AWS session (profile, region, etc.)
 
     Returns:
         dict: A dictionary where keys are 'sub' (UUIDs) and values are email addresses.
               Returns an empty dictionary if no users are found or on error.
     '''
 
-    client = get_cognito_client(obj)
+    client = get_cognito_client(session_config)
     sub_email_map = {}
     pagination_token = None
 

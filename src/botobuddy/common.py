@@ -25,13 +25,13 @@ type AWSClient = (
 
 def get_aws_client(
     service,
-    cliparams,
+    session_config,
     resource=False,
     core_config: dict | None = None
 ) -> AWSClient:
     '''Create and return an AWS client with optional profile and region'''
-    profile = cliparams.get('profile')
-    region = cliparams.get('region')
+    profile = session_config.get('profile')
+    region = session_config.get('region')
 
     params = {}
 
@@ -56,7 +56,7 @@ def get_aws_client(
     lg.info('Creating AWS session')
     session = boto3.Session(**params)
 
-    if assume_role := cliparams.get('assume_role'):
+    if assume_role := session_config.get('assume_role'):
         session_name = randomname.get_name()
         sts_client = session.client('sts')
 
@@ -90,30 +90,33 @@ def get_aws_client(
 
 
 # Client factories
-def get_sts_client(cliparams) -> STSClient:
-    return cast(STSClient, get_aws_client('sts', cliparams))
+def get_sts_client(session_config) -> STSClient:
+    return cast(STSClient, get_aws_client('sts', session_config))
 
 
-def get_s3_client(cliparams, core_config: dict | None = None) -> S3Client:
-    return cast(S3Client, get_aws_client('s3', cliparams, core_config=core_config))
+def get_s3_client(session_config, core_config: dict | None = None) -> S3Client:
+    return cast(S3Client, get_aws_client('s3', session_config, core_config=core_config))
 
 
-def get_dynamodb_client(cliparams) -> DynamoDBClient:
-    return cast(DynamoDBClient, get_aws_client('dynamodb', cliparams))
+def get_dynamodb_client(session_config) -> DynamoDBClient:
+    return cast(DynamoDBClient, get_aws_client('dynamodb', session_config))
 
 
-def get_route53_client(cliparams) -> Route53Client:
-    return cast(Route53Client, get_aws_client('route53', cliparams))
+def get_route53_client(session_config) -> Route53Client:
+    return cast(Route53Client, get_aws_client('route53', session_config))
 
 
-def get_sagemaker_client(cliparams) -> SageMakerClient:
-    return cast(SageMakerClient, get_aws_client('sagemaker', cliparams))
+def get_sagemaker_client(session_config) -> SageMakerClient:
+    return cast(SageMakerClient, get_aws_client('sagemaker', session_config))
 
 
-def get_cognito_client(cliparams) -> CognitoClient:
-    return cast(CognitoClient, get_aws_client('cognito-idp', cliparams))
+def get_cognito_client(session_config) -> CognitoClient:
+    return cast(CognitoClient, get_aws_client('cognito-idp', session_config))
 
 
 # Resource factories
-def get_dynamodb_resource(cliparams) -> DynamoDBServiceResource:
-    return cast(DynamoDBServiceResource, get_aws_client('dynamodb', cliparams, resource=True))
+def get_dynamodb_resource(session_config) -> DynamoDBServiceResource:
+    return cast(
+        DynamoDBServiceResource,
+        get_aws_client('dynamodb', session_config, resource=True)
+    )

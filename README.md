@@ -24,3 +24,13 @@
 uv sync
 uv run botobuddy --help
 ```
+
+## Session Configuration
+
+This library uses the `session_config` transversely for AWS Session configuration and other general configuration parameters, generally supplied to the CLI.
+
+This is a dictionary with the following keys, all optional:
+
+- `profile`: The AWS profile to use.
+- `region`: The AWS region to use.
+- `assume_role`: The AWS role to assume.
