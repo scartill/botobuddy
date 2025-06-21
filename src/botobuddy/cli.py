@@ -1,6 +1,8 @@
 import click
 import logging as lg
 import sys
+import traceback
+from argparse import ArgumentParser
 
 import botobuddy.s3 as s3
 import botobuddy.dynamo as dynamo
@@ -15,6 +17,7 @@ def setup_logging(verbose):
 
 @click.group()
 @click.option('--verbose', is_flag=True, help='Enable debug logging')
+@click.option('--traceback', is_flag=True, help='Enable traceback on error')
 @click.option('--profile', help='AWS profile name to use')
 @click.option('--region', help='AWS region to use')
 @click.option('--assume-role', help='AWS role ARN to assume')
@@ -37,6 +40,13 @@ def main():
         sys.exit(0)
 
     except Exception as e:
+        parser = ArgumentParser()
+        parser.add_argument('--traceback', action='store_true')
+        args, _ = parser.parse_known_args()
+
+        if args.traceback:  # type: ignore
+            traceback.print_exc()
+
         lg.error(e)
         sys.exit(1)
 

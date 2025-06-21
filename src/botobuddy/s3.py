@@ -142,7 +142,7 @@ class S3Uri:
 
 
 def fast_download_s3_files(
-    client: S3Client,
+    obj: dict,
     targets: list[tuple[str, str, str]],
     skip_existing: bool = False,
     create_folders: bool = True,
@@ -156,10 +156,16 @@ def fast_download_s3_files(
         create_folders: Create the folders for the files
     '''
 
+    boto_config = {
+        'max_pool_connections': concurrency
+    }
+
+    client = get_s3_client(obj, core_config=boto_config)
+
     config = {
         'transfer_config': TransferConfig(
-            max_concurrency=concurrency,
-            use_threads=True
+            # max_concurrency=concurrency,
+            use_threads=False
         )
     }
 

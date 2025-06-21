@@ -6,7 +6,7 @@ import logging as lg
 import click
 from rich.console import Console
 from rich.table import Table
-from botobuddy.common import get_s3_client, get_sagemaker_client, get_cognito_client
+from botobuddy.common import get_sagemaker_client, get_cognito_client, get_s3_client
 from botobuddy.s3 import fast_download_s3_files, S3Uri
 
 
@@ -74,8 +74,9 @@ def analyse_human_effort(obj, job_name: str, data_dir: Path):
             }
         }
     '''
-    sagemaker = get_sagemaker_client(obj)
+
     s3 = get_s3_client(obj)
+    sagemaker = get_sagemaker_client(obj)
 
     try:
         response = sagemaker.describe_labeling_job(LabelingJobName=job_name)
@@ -107,7 +108,7 @@ def analyse_human_effort(obj, job_name: str, data_dir: Path):
 
                     targets.append((manifest_uri.bucket, key, target_file_path))
 
-        fast_download_s3_files(s3, targets, skip_existing=True)
+        fast_download_s3_files(obj, targets, skip_existing=True)
 
         annotations = Counter()
         time_spent = Counter()
@@ -151,8 +152,7 @@ def analyse_human_effort(obj, job_name: str, data_dir: Path):
         return report_data
 
     except Exception as e:
-        lg.error(f'Failed tp run the analysis for job {job_name}: {e}')
-        raise click.ClickException(f'Failed to analyse human effort for job {job_name}') from e
+        raise UserWarning(f'Failed to analyse human effort for job {job_name}') from e
 
 
 def get_sub_to_email_mapping(obj, user_pool_id):
@@ -211,4 +211,4 @@ def get_sub_to_email_mapping(obj, user_pool_id):
         return sub_email_map
 
     except Exception as e:
-        raise ValueError(f"Error: User Pool with ID '{user_pool_id}' not found.") from e
+        raise UserWarning(f"Error: User Pool with ID '{user_pool_id}' not found.") from e
