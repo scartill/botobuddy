@@ -9,7 +9,8 @@ dependencies = [
     "boto3>=1.38.15",
     "click>=8.2.0",
     "randomname>=0.2.1",
-    "types-boto3[essential,route53,sts]>=1.38.35",
+    "rich>=14.0.0",
+    "types-boto3[essential,route53,sts,sagemaker,cognito-idp]>=1.38.35",
 ]
 
 [project.scripts]

@@ -1,3 +1,6 @@
+# Temp data dir
+temp/
+
 # Python-generated files
 __pycache__/
 *.py[oc]

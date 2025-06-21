@@ -6,6 +6,7 @@ import botobuddy.s3 as s3
 import botobuddy.dynamo as dynamo
 import botobuddy.route53 as route53
 import botobuddy.auth as auth
+import botobuddy.sagemaker as sagemaker
 
 
 def setup_logging(verbose):
@@ -31,6 +32,7 @@ def main():
         dynamo.import_commands(cli)
         route53.import_commands(cli)
         auth.import_commands(cli)
+        sagemaker.import_commands(cli)
         cli()
         sys.exit(0)
 

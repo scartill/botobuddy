@@ -7,9 +7,19 @@ from types_boto3_s3 import S3Client
 from types_boto3_dynamodb import DynamoDBClient, DynamoDBServiceResource
 from types_boto3_route53 import Route53Client
 from types_boto3_sts import STSClient
+from types_boto3_sagemaker import SageMakerClient
+from types_boto3_cognito_idp import Client as CognitoClient
 
 
-type AWSClient = S3Client | DynamoDBClient | DynamoDBServiceResource | Route53Client | STSClient
+type AWSClient = (
+    S3Client |
+    DynamoDBClient |
+    DynamoDBServiceResource |
+    Route53Client |
+    STSClient |
+    SageMakerClient |
+    CognitoClient
+)
 
 
 def get_aws_client(service, obj, resource=False) -> AWSClient:
@@ -78,6 +88,14 @@ def get_dynamodb_client(obj) -> DynamoDBClient:
 
 def get_route53_client(obj) -> Route53Client:
     return cast(Route53Client, get_aws_client('route53', obj))
+
+
+def get_sagemaker_client(obj) -> SageMakerClient:
+    return cast(SageMakerClient, get_aws_client('sagemaker', obj))
+
+
+def get_cognito_client(obj) -> CognitoClient:
+    return cast(CognitoClient, get_aws_client('cognito-idp', obj))
 
 
 # Resource factories
