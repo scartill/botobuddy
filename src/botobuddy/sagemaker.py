@@ -4,8 +4,11 @@ from collections import Counter
 import logging as lg
 
 import click
-from rich.console import Console
+import rich
 from rich.table import Table
+from rich.progress import track
+from rich.spinner import Spinner
+from rich.live import Live
 from botobuddy.common import get_sagemaker_client, get_cognito_client, get_s3_client
 from botobuddy.s3 import fast_download_s3_files, S3Uri
 
@@ -37,9 +40,7 @@ def analyse_human_effort_command(obj, job_name, output_json, data_dir):
     if output_json:
         click.echo(json.dumps(report_data, indent=4))
     else:
-        console = Console()
         table = Table(title=f'Human Effort Report ({job_name})')
-
         table.add_column('Worker Email', justify='left', style='cyan', no_wrap=True)
         table.add_column('Annotations', justify='right', style='magenta')
         table.add_column('Time Spent', justify='right', style='green')
@@ -54,7 +55,7 @@ def analyse_human_effort_command(obj, job_name, output_json, data_dir):
                 f'{time_spent_hours}h {time_spent_minutes}m'
             )
 
-        console.print(table)
+        rich.print(table)
 
 
 def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict = {}):
@@ -93,29 +94,36 @@ def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict = {
 
         paginator = s3.get_paginator('list_objects_v2')
 
-        for page in paginator.paginate(
-            Bucket=manifest_uri.bucket, Prefix=labelling_results_prefix
-        ):
-            for item in page.get('Contents', []):
-                key = item['Key']  # type: ignore
+        with Live(Spinner('aesthetic', text='Collecting content...')):
+            for page in paginator.paginate(
+                Bucket=manifest_uri.bucket, Prefix=labelling_results_prefix
+            ):
+                for item in page.get('Contents', []):
+                    key = item['Key']  # type: ignore
 
-                if 'worker-response' in key:
-                    s3_relative_path = Path(key).relative_to(labelling_results_prefix)
+                    if 'worker-response' in key:
+                        s3_relative_path = Path(key).relative_to(labelling_results_prefix)
 
-                    # Replace colons with underscores to avoid issues with Windows paths
-                    target_file_path = Path(
-                        str(target_dir / s3_relative_path).replace(':', '_')
-                    )
+                        # Replace colons with underscores to avoid issues with Windows paths
+                        target_file_path = Path(
+                            str(target_dir / s3_relative_path).replace(':', '_')
+                        )
 
-                    targets.append((manifest_uri.bucket, key, target_file_path))
+                        targets.append((manifest_uri.bucket, key, target_file_path))
 
-        fast_download_s3_files(targets, skip_existing=True, session_config=session_config)
+        fast_download_s3_files(
+            targets=targets,
+            skip_existing=True,
+            session_config=session_config,
+            concurrency=10,
+            create_folders=False
+        )
 
         annotations = Counter()
         time_spent = Counter()
         cognito_user_ids = dict()
 
-        for target in targets:
+        for target in track(targets, description='Analyzing...'):
             target_data = json.loads(target[2].read_text())
 
             for answer in target_data['answers']:

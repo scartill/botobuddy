@@ -187,15 +187,14 @@ def fast_download_s3_files(
             local_path = str(local_path)
 
         if skip_existing and Path(local_path).exists():
-            return f"Skipping {key} because it already exists"
+            return f'Skipping {key} because it already exists'
 
-        print(f"Downloading {key} to {local_path}")
         client.download_file(
             bucket_name, key, local_path,
             Config=config['transfer_config']
         )
 
-        return f"Successfully downloaded {key}"
+        return f'Successfully downloaded {key}'
 
     with ThreadPoolExecutor(max_workers=concurrency) as executor:
         futures = [
@@ -208,4 +207,4 @@ def fast_download_s3_files(
         ]
 
         for future in futures:
-            lg.info(future.result())
+            lg.debug(future.result())
