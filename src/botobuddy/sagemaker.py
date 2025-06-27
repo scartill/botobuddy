@@ -82,6 +82,10 @@ def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict = {
 
     try:
         response = sagemaker.describe_labeling_job(LabelingJobName=job_name)
+
+        if response['LabelingJobStatus'] != 'Completed':
+            raise UserWarning(f'Labelling job {job_name} is not completed')
+
         manifest_uri = S3Uri(response['LabelingJobOutput']['OutputDatasetS3Uri'])
         path_list = manifest_uri.path.split('/')
         manifests_index = path_list.index('manifests')
@@ -161,7 +165,7 @@ def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict = {
         return report_data
 
     except Exception as e:
-        raise UserWarning(f'Failed to analyse human effort for job {job_name}') from e
+        raise UserWarning(f'Failed to analyse human effort for job {job_name}: {e}') from e
 
 
 def get_sub_to_email_mapping(user_pool_id: str, session_config: dict = {}):
