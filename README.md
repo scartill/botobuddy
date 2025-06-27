@@ -7,7 +7,7 @@
 
 ### S3 Commands
 - **delete-bucket**: Clean and delete an S3 bucket completely, including all objects and versions.
-- **ls**: List all objects in an S3 bucket.
+- **ls**: List all objects in an S3 bucket. The same as `aws s3 ls`, but useful with `--assume-role`.
 
 ### Route 53 Commands
 - **export-hosted-zone**: Export all resource record sets from a specified hosted zone.
