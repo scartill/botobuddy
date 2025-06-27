@@ -10,6 +10,19 @@ from types_boto3_s3 import S3Client
 from botobuddy.common import get_s3_client
 
 
+class S3Uri:
+    def __init__(self, s3_uri: str):
+        self.s3_uri = s3_uri
+        self.parsed_uri = urlparse(s3_uri)
+        self.bucket = self.parsed_uri.netloc
+        self.path = self.parsed_uri.path.lstrip('/')
+        self.filename = self.parsed_uri.path.split('/')[-1]
+        self.parent_uri = 's3://' + self.bucket + '/' + '/'.join(self.path.split('/')[:-1])
+
+    def __str__(self):
+        return self.s3_uri
+
+
 def import_commands(parent):
     parent.add_command(s3_group)
 
@@ -49,10 +62,14 @@ def ls_cmd(obj, s3_path):
     list_all_objects(client, s3_path, print_object)
 
 
-def list_all_objects(client: S3Client, s3_path: str, on_object):
+def list_all_objects(client: S3Client, s3_path: str | S3Uri, on_object):
     '''List all objects in an S3 bucket and call on_object for each'''
-    s3_uri = S3Uri(s3_path)
-    paginator = client.get_paginator('list_objects_v2')  # type: ignore
+    if isinstance(s3_path, str):
+        s3_uri = S3Uri(s3_path)
+    else:
+        s3_uri = s3_path
+
+    paginator = client.get_paginator('list_objects_v2')
     page_iterator = paginator.paginate(Bucket=s3_uri.bucket, Prefix=s3_uri.path)
 
     for page in page_iterator:
@@ -126,19 +143,6 @@ def delete_bucket(client, bucket_name):
     lg.info(f'Deleting bucket: {bucket_name}')
     client.delete_bucket(Bucket=bucket_name)
     lg.info(f'Bucket {bucket_name} has been deleted successfully')
-
-
-class S3Uri:
-    def __init__(self, s3_uri: str):
-        self.s3_uri = s3_uri
-        self.parsed_uri = urlparse(s3_uri)
-        self.bucket = self.parsed_uri.netloc
-        self.path = self.parsed_uri.path.lstrip('/')
-        self.filename = self.parsed_uri.path.split('/')[-1]
-        self.parent_uri = 's3://' + self.bucket + '/' + '/'.join(self.path.split('/')[:-1])
-
-    def __str__(self):
-        return self.s3_uri
 
 
 def fast_download_s3_files(

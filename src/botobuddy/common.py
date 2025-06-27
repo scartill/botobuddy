@@ -66,6 +66,7 @@ def get_aws_client(
         )
 
         lg.info(f'Assumed role {assume_role} with session name {session_name}')
+        lg.debug(f'Assumed role object: {assumed_role_object}')
         credentials = assumed_role_object['Credentials']
 
         assume_params = {
