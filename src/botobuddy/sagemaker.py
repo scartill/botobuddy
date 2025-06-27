@@ -115,13 +115,12 @@ def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict = {
 
                         targets.append((manifest_uri.bucket, key, target_file_path))
 
-        fast_download_s3_files(
-            targets=targets,
-            skip_existing=True,
-            session_config=session_config,
-            concurrency=10,
-            create_folders=False
-        )
+            fast_download_s3_files(
+                targets=targets,
+                skip_existing=True,
+                session_config=session_config,
+                concurrency=100
+            )
 
         annotations = Counter()
         time_spent = Counter()
