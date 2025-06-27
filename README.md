@@ -18,6 +18,21 @@
 - **human-effort**: Generate a report on the human effort that a SageMaker job required.
 
 
+## Noteable Functions and Classes
+
+### `botobuddy.utils.dslice`
+
+This function is used to slice a dictionary into a new dictionary, using the keys to define the slice.
+Each key can be a string, or a dictionary with the following keys:
+- `k`: the key to slice
+- `c`: the cast or conversion function
+- `d`: the default value
+- `n`: the name of the key in the result dictionary
+
+### `botobuddy.s3.S3Uri`
+
+This class is used to represent an S3 URI, and provides methods to parse and manipulate it.
+
 ## Development Environment Quickstart
 
 ```pwsh
