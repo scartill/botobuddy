@@ -3,7 +3,7 @@ from typing import cast
 
 import randomname
 import boto3
-from botocore.session import Session as BotocoreSession
+from botocore.config import Config
 from types_boto3_s3 import S3Client
 from types_boto3_dynamodb import DynamoDBClient, DynamoDBServiceResource
 from types_boto3_route53 import Route53Client
@@ -25,7 +25,7 @@ type AWSClient = (
 
 def get_aws_client(
     service,
-    session_config,
+    session_config={},
     resource=False,
     core_config: dict | None = None
 ) -> AWSClient:
@@ -42,16 +42,6 @@ def get_aws_client(
     if region:
         lg.info(f'Using AWS region: {region}')
         params['region_name'] = region
-
-    if core_config:
-        lg.info(f'Using core session config: {core_config}')
-        botocore_session = BotocoreSession()
-
-        for key, value in core_config.items():
-            lg.info(f'Setting core session config variable {key} to {value}')
-            botocore_session.set_config_variable(key, value)
-
-        params['botocore_session'] = botocore_session
 
     lg.info('Creating AWS session')
     session = boto3.Session(**params)
@@ -82,41 +72,50 @@ def get_aws_client(
         lg.info('Creating AWS session with assumed role')
         session = boto3.Session(**assume_params)  # type: ignore
 
+    client_params = {
+        'service_name': service
+    }
+
+    if core_config:
+        lg.info(f'Using core session config: {core_config}')
+        botocore_config = Config(**core_config)
+        client_params['config'] = botocore_config
+
     if resource:
-        result = session.resource(service)
+        result = session.resource(**client_params)
     else:
-        result = session.client(service)
+        result = session.client(**client_params)
 
     return result
 
 
 # Client factories
-def get_sts_client(session_config) -> STSClient:
+def get_sts_client(session_config={}) -> STSClient:
     return cast(STSClient, get_aws_client('sts', session_config))
 
 
-def get_s3_client(session_config, core_config: dict | None = None) -> S3Client:
+def get_s3_client(session_config={}, core_config: dict | None = None) -> S3Client:
     return cast(S3Client, get_aws_client('s3', session_config, core_config=core_config))
 
 
-def get_dynamodb_client(session_config) -> DynamoDBClient:
+def get_dynamodb_client(session_config={}) -> DynamoDBClient:
     return cast(DynamoDBClient, get_aws_client('dynamodb', session_config))
 
 
-def get_route53_client(session_config) -> Route53Client:
+def get_route53_client(session_config={}) -> Route53Client:
     return cast(Route53Client, get_aws_client('route53', session_config))
 
 
-def get_sagemaker_client(session_config) -> SageMakerClient:
+def get_sagemaker_client(session_config={}) -> SageMakerClient:
     return cast(SageMakerClient, get_aws_client('sagemaker', session_config))
 
 
-def get_cognito_client(session_config) -> CognitoIdentityProviderClient:
+def get_cognito_client(session_config={}) -> CognitoIdentityProviderClient:
     return cast(CognitoIdentityProviderClient, get_aws_client('cognito-idp', session_config))
 
 
 # Resource factories
-def get_dynamodb_resource(session_config) -> DynamoDBServiceResource:
+def get_dynamodb_resource(session_config={}) -> DynamoDBServiceResource:
     return cast(
         DynamoDBServiceResource,
         get_aws_client('dynamodb', session_config, resource=True)

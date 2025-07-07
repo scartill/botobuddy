@@ -163,7 +163,7 @@ def fast_download_s3_files(
     '''
 
     boto_config = {
-        'max_pool_connections': concurrency
+        'max_pool_connections': int(1.5 * concurrency)
     }
 
     client = get_s3_client(session_config, core_config=boto_config)

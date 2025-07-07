@@ -98,7 +98,7 @@ def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict = {
 
         paginator = s3.get_paginator('list_objects_v2')
 
-        with Live(Spinner('aesthetic', text='Collecting content...')):
+        with Live(Spinner('aesthetic', text='Collecting content...'), transient=True):
             for page in paginator.paginate(
                 Bucket=manifest_uri.bucket, Prefix=labelling_results_prefix
             ):
@@ -118,15 +118,14 @@ def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict = {
             fast_download_s3_files(
                 targets=targets,
                 skip_existing=True,
-                session_config=session_config,
-                concurrency=100
+                session_config=session_config
             )
 
         annotations = Counter()
         time_spent = Counter()
         cognito_user_ids = dict()
 
-        for target in track(targets, description='Analyzing...'):
+        for target in track(targets, description='Analyzing...', transient=True):
             target_data = json.loads(target[2].read_text())
 
             for answer in target_data['answers']:
