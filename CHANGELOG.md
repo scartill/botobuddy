@@ -1,3 +1,8 @@
+# 0.3.2
+
+- Downgraded rich to 13.0.0 to fix compatibility issues with `aws-sam-cli`
+- Added `botobuddy --version` option
+
 # 0.3.1
 
 - Fixed fast download concurrency issue

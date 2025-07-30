@@ -18,7 +18,7 @@ wheels = [
 
 [[package]]
 name = "botobuddy"
-version = "0.3.1"
+version = "0.3.2"
 source = { editable = "." }
 dependencies = [
     { name = "boto3" },
@@ -38,7 +38,7 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.38.15" },
     { name = "click", specifier = ">=8.2.0" },
     { name = "randomname", specifier = ">=0.2.1" },
-    { name = "rich", specifier = ">=14.0.0" },
+    { name = "rich", specifier = ">=13.0.0" },
     { name = "types-boto3", extras = ["essential", "route53", "sts", "sagemaker", "cognito-idp"], specifier = ">=1.38.35" },
 ]
 

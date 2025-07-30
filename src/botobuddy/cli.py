@@ -3,6 +3,7 @@ import logging as lg
 import sys
 import traceback
 from argparse import ArgumentParser
+from importlib.metadata import version
 
 import botobuddy.s3 as s3
 import botobuddy.dynamo as dynamo
@@ -21,6 +22,7 @@ def setup_logging(verbose):
 @click.option('--profile', help='AWS profile name to use')
 @click.option('--region', help='AWS region to use')
 @click.option('--assume-role', help='AWS role ARN to assume')
+@click.version_option(version=version('botobuddy'))
 @click.pass_context
 def cli(ctx, verbose, **kwargs):
     '''Extended AWS Operations CLI'''
