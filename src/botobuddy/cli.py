@@ -1,9 +1,11 @@
-import click
 import logging as lg
 import sys
 import traceback
 from argparse import ArgumentParser
 from importlib.metadata import version
+
+import click
+from botocore.exceptions import TokenRetrievalError
 
 import botobuddy.s3 as s3
 import botobuddy.dynamo as dynamo
@@ -41,6 +43,10 @@ def main():
         cli()
         sys.exit(0)
 
+    except TokenRetrievalError:
+        lg.error('Failed to retrieve AWS credentials, please check or re-login')
+        sys.exit(1)
+
     except Exception as e:
         parser = ArgumentParser()
         parser.add_argument('--traceback', action='store_true')
@@ -50,7 +56,7 @@ def main():
             traceback.print_exc()
 
         lg.error(e)
-        sys.exit(1)
+        sys.exit(100)
 
 
 if __name__ == '__main__':

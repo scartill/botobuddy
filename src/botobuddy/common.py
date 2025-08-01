@@ -23,13 +23,20 @@ type AWSClient = (
 )
 
 
-def get_aws_client(
-    service,
-    session_config={},
-    resource=False,
-    core_config: dict | None = None
-) -> AWSClient:
-    '''Create and return an AWS client with optional profile and region'''
+def get_aws_session(session_config: dict = {}) -> boto3.Session:
+    '''Create and return an AWS session with optional profile and region
+
+    Args:
+        session_config: A dictionary of session configuration options:
+        - profile: The AWS profile to use
+        - region: The AWS region to use
+        - assume_role: The AWS role ARN to assume
+        - session_name: The name of the session
+
+    Returns:
+        A boto3.Session object
+    '''
+
     profile = session_config.get('profile')
     region = session_config.get('region')
 
@@ -71,6 +78,18 @@ def get_aws_client(
 
         lg.info('Creating AWS session with assumed role')
         session = boto3.Session(**assume_params)  # type: ignore
+
+    return session
+
+
+def get_aws_client(
+    service,
+    session_config={},
+    resource=False,
+    core_config: dict | None = None
+) -> AWSClient:
+    '''Create and return an AWS client with optional profile and region'''
+    session = get_aws_session(session_config)
 
     client_params = {
         'service_name': service

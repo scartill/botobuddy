@@ -1,9 +1,12 @@
-import click
 import logging as lg
+import tempfile
+import uuid
 from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+import click
+from benedict import benedict
 from boto3.s3.transfer import TransferConfig
 from types_boto3_s3 import S3Client
 
@@ -60,6 +63,20 @@ def ls_cmd(obj, s3_path):
         lg.info(item['Key'])  # type: ignore
 
     list_all_objects(client, s3_path, print_object)
+
+
+@s3_group.command(name='view-dict')
+@click.argument('s3_path')
+@click.pass_obj
+def view_dict_cmd(obj, s3_path):
+    s3_uri = S3Uri(s3_path)
+    dirpath = tempfile.gettempdir()
+    filename = str(uuid.uuid4())
+    filepath = Path(dirpath) / filename
+    s3 = get_s3_client(obj)
+    s3.download_file(s3_uri.bucket, s3_uri.path, str(filepath))
+    d = benedict.from_json(str(filepath))
+    click.echo(d.to_json(indent=2))
 
 
 def list_all_objects(client: S3Client, s3_path: str | S3Uri, on_object):
