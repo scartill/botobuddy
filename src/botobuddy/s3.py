@@ -174,7 +174,7 @@ def delete_bucket_contents(client, bucket_name):
             if objects_to_delete:
                 # Delete in batches of 1000 (AWS limit)
                 for i in range(0, len(objects_to_delete), 1000):
-                    batch = objects_to_delete[i:i +1000]
+                    batch = objects_to_delete[i:i + 1000]
 
                     client.delete_objects(
                         Bucket=bucket_name,
