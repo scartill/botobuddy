@@ -88,26 +88,23 @@ def view_dict_cmd(obj, in_format, out_format, s3_path):
     s3 = get_s3_client(obj)
     s3.download_file(s3_uri.bucket, s3_uri.path, str(filepath))
 
-    match in_format:
-        case 'json':
-            loader = benedict.from_json
-            dumper = json_dumper
-        case 'yaml':
-            loader = benedict.from_yaml
-            dumper = benedict.to_yaml
-        case 'toml':
-            loader = benedict.from_toml
-            dumper = benedict.to_toml
+    loaders = {
+        'json': benedict.from_json,
+        'yaml': benedict.from_yaml,
+        'toml': benedict.from_toml
+    }
 
-    match out_format:
-        case 'original':
-            pass
-        case 'json':
-            dumper = json_dumper
-        case 'yaml':
-            dumper = benedict.to_yaml
-        case 'toml':
-            dumper = benedict.to_toml
+    dumpers = {
+        'json': json_dumper,
+        'yaml': benedict.to_yaml,
+        'toml': benedict.to_toml
+    }
+
+    loader = loaders[in_format]
+    dumper = dumpers[in_format]
+
+    if out_format != 'original':
+        dumper = dumpers[out_format]
 
     d = loader(str(filepath))
     click.echo(dumper(d))
