@@ -77,17 +77,6 @@ def ls_cmd(obj, s3_path):
 )
 @click.argument('s3_path')
 def view_dict_cmd(obj, in_format, out_format, s3_path):
-    if in_format == 'auto':
-        in_format = s3_path.split('.')[-1]
-        lg.info(f'Inferred format: {in_format}')
-
-    s3_uri = S3Uri(s3_path)
-    dirpath = tempfile.gettempdir()
-    filename = str(uuid.uuid4())
-    filepath = Path(dirpath) / filename
-    s3 = get_s3_client(obj)
-    s3.download_file(s3_uri.bucket, s3_uri.path, str(filepath))
-
     loaders = {
         'json': benedict.from_json,
         'yaml': benedict.from_yaml,
@@ -99,6 +88,20 @@ def view_dict_cmd(obj, in_format, out_format, s3_path):
         'yaml': benedict.to_yaml,
         'toml': benedict.to_toml
     }
+
+    if in_format == 'auto':
+        in_format = s3_path.split('.')[-1]
+        lg.info(f'Inferred format: {in_format}')
+
+        if in_format not in loaders:
+            raise UserWarning(f'Unsupported format: {in_format}')
+
+    s3_uri = S3Uri(s3_path)
+    dirpath = tempfile.gettempdir()
+    filename = str(uuid.uuid4())
+    filepath = Path(dirpath) / filename
+    s3 = get_s3_client(obj)
+    s3.download_file(s3_uri.bucket, s3_uri.path, str(filepath))
 
     loader = loaders[in_format]
     dumper = dumpers[in_format]
