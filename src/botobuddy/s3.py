@@ -66,17 +66,55 @@ def ls_cmd(obj, s3_path):
 
 
 @s3_group.command(name='view-dict')
-@click.argument('s3_path')
 @click.pass_obj
-def view_dict_cmd(obj, s3_path):
+@click.option(
+    '--in-format', type=click.Choice(['auto', 'json', 'yaml', 'toml']), default='auto'
+)
+@click.option(
+    '--out-format',
+    type=click.Choice(['original', 'json', 'yaml', 'toml']),
+    default='original'
+)
+@click.argument('s3_path')
+def view_dict_cmd(obj, in_format, out_format, s3_path):
+    if in_format == 'auto':
+        in_format = s3_path.split('.')[-1]
+        lg.info(f'Inferred format: {in_format}')
+
     s3_uri = S3Uri(s3_path)
     dirpath = tempfile.gettempdir()
     filename = str(uuid.uuid4())
     filepath = Path(dirpath) / filename
     s3 = get_s3_client(obj)
     s3.download_file(s3_uri.bucket, s3_uri.path, str(filepath))
-    d = benedict.from_json(str(filepath))
-    click.echo(d.to_json(indent=2))
+
+    match in_format:
+        case 'json':
+            loader = benedict.from_json
+            dumper = json_dumper
+        case 'yaml':
+            loader = benedict.from_yaml
+            dumper = benedict.to_yaml
+        case 'toml':
+            loader = benedict.from_toml
+            dumper = benedict.to_toml
+
+    match out_format:
+        case 'original':
+            pass
+        case 'json':
+            dumper = json_dumper
+        case 'yaml':
+            dumper = benedict.to_yaml
+        case 'toml':
+            dumper = benedict.to_toml
+
+    d = loader(str(filepath))
+    click.echo(dumper(d))
+
+
+def json_dumper(d):
+    return benedict.to_json(d, indent=2)
 
 
 def list_all_objects(client: S3Client, s3_path: str | S3Uri, on_object):
