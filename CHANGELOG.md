@@ -1,3 +1,7 @@
+# 0.3.3
+
+- Added `botobuddy s3 view-dict` command
+
 # 0.3.2
 
 - Downgraded rich to 13.0.0 to fix compatibility issues with `aws-sam-cli`
