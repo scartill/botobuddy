@@ -1,9 +1,9 @@
 import click
 import json
-import logging as lg
 from pathlib import Path
 
 from botobuddy.common import get_aws_client
+from botobuddy.logger import logger
 
 
 def import_commands(parent):
@@ -34,7 +34,7 @@ def import_hosted_zone(obj, hosted_zone_id, filename):
     client = get_aws_client('route53', obj)
     records = json.loads(Path(filename).read_text())
 
-    lg.info(f'Importing {len(records)} records to {hosted_zone_id}')
+    logger.info(f'Importing {len(records)} records to {hosted_zone_id}')
 
     for record in records:
         if record['Type'] in ['NS', 'SOA']:

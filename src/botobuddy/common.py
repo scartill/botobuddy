@@ -1,4 +1,3 @@
-import logging as lg
 from typing import cast
 
 import randomname
@@ -10,6 +9,8 @@ from types_boto3_route53 import Route53Client
 from types_boto3_sts import STSClient
 from types_boto3_sagemaker import SageMakerClient
 from types_boto3_cognito_idp import CognitoIdentityProviderClient
+
+from botobuddy.logger import logger
 
 
 type AWSClient = (
@@ -43,14 +44,14 @@ def get_aws_session(session_config: dict = {}) -> boto3.Session:
     params = {}
 
     if profile:
-        lg.info(f'Using AWS profile: {profile}')
+        logger.info(f'Using AWS profile: {profile}')
         params['profile_name'] = profile
 
     if region:
-        lg.info(f'Using AWS region: {region}')
+        logger.info(f'Using AWS region: {region}')
         params['region_name'] = region
 
-    lg.info('Creating AWS session')
+    logger.info('Creating AWS session')
     session = boto3.Session(**params)
 
     if assume_role := session_config.get('assume_role'):
@@ -62,8 +63,8 @@ def get_aws_session(session_config: dict = {}) -> boto3.Session:
             RoleSessionName=session_name
         )
 
-        lg.info(f'Assumed role {assume_role} with session name {session_name}')
-        lg.debug(f'Assumed role object: {assumed_role_object}')
+        logger.info(f'Assumed role {assume_role} with session name {session_name}')
+        logger.debug(f'Assumed role object: {assumed_role_object}')
         credentials = assumed_role_object['Credentials']
 
         assume_params = {
@@ -73,10 +74,10 @@ def get_aws_session(session_config: dict = {}) -> boto3.Session:
         }
 
         if region:
-            lg.info(f'Using AWS region: {region} for assumed role')
+            logger.info(f'Using AWS region: {region} for assumed role')
             assume_params['region_name'] = region
 
-        lg.info('Creating AWS session with assumed role')
+        logger.info('Creating AWS session with assumed role')
         session = boto3.Session(**assume_params)  # type: ignore
 
     return session
@@ -96,7 +97,7 @@ def get_aws_client(
     }
 
     if core_config:
-        lg.info(f'Using core session config: {core_config}')
+        logger.debug(f'Using core session config: {core_config}')
         botocore_config = Config(**core_config)
         client_params['config'] = botocore_config
 

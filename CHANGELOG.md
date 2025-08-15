@@ -1,3 +1,7 @@
+# 0.3.4
+
+- Added `botobuddy.s3.sync_folder_from_s3` function
+
 # 0.3.3
 
 - Added `botobuddy s3 view-dict` command

@@ -1,7 +1,7 @@
 import click
-import logging as lg
 
 from botobuddy.common import get_dynamodb_resource, DynamoDBServiceResource
+from botobuddy.logger import logger
 
 
 def import_commands(parent):
@@ -20,7 +20,7 @@ def truncate_table_cmd(obj, table_name):
     '''Truncate a DynamoDB table'''
     client = get_dynamodb_resource(obj)
     counter = truncate_table(client, table_name)
-    lg.info(f'Deleted {counter} items')
+    logger.info(f'Deleted {counter} items')
 
 
 def truncate_table(client: DynamoDBServiceResource, table_name: str):

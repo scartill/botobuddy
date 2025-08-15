@@ -1,4 +1,3 @@
-import logging as lg
 import sys
 import traceback
 from argparse import ArgumentParser
@@ -7,15 +6,12 @@ from importlib.metadata import version
 import click
 from botocore.exceptions import TokenRetrievalError
 
+from botobuddy.logger import setup_logging, logger
 import botobuddy.s3 as s3
 import botobuddy.dynamo as dynamo
 import botobuddy.route53 as route53
 import botobuddy.auth as auth
 import botobuddy.sagemaker as sagemaker
-
-
-def setup_logging(verbose):
-    lg.basicConfig(level=lg.INFO if not verbose else lg.DEBUG)
 
 
 @click.group()
@@ -44,7 +40,7 @@ def main():
         sys.exit(0)
 
     except TokenRetrievalError:
-        lg.error('Failed to retrieve AWS credentials, please check or re-login')
+        logger.error('Failed to retrieve AWS credentials, please check or re-login')
         sys.exit(1)
 
     except Exception as e:
@@ -55,7 +51,7 @@ def main():
         if args.traceback:  # type: ignore
             traceback.print_exc()
 
-        lg.error(e)
+        logger.error(e)
         sys.exit(100)
 
 

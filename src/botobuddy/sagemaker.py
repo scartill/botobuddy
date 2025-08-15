@@ -1,7 +1,6 @@
 import json
 from pathlib import Path
 from collections import Counter
-import logging as lg
 
 import click
 import rich
@@ -9,6 +8,8 @@ from rich.table import Table
 from rich.progress import track
 from rich.spinner import Spinner
 from rich.live import Live
+
+from botobuddy.logger import logger
 from botobuddy.common import get_sagemaker_client, get_cognito_client, get_s3_client
 from botobuddy.s3 import fast_download_s3_files, S3Uri
 
@@ -90,7 +91,7 @@ def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict = {
         path_list = manifest_uri.path.split('/')
         manifests_index = path_list.index('manifests')
         labelling_results_prefix = '/'.join(path_list[:manifests_index]).lstrip('/')
-        lg.info(f'Labelling results prefix: {labelling_results_prefix}')
+        logger.info(f'Labelling results prefix: {labelling_results_prefix}')
 
         target_dir = data_dir / 'metadata' / job_name / 'human-effort'
         target_dir.mkdir(parents=True, exist_ok=True)
@@ -136,18 +137,18 @@ def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict = {
 
         workforce = sagemaker.describe_workforce(WorkforceName='default')
         user_pool_id = workforce['Workforce']['CognitoConfig']['UserPool']  # type: ignore
-        lg.info(f'Using Cognito user pool ID: {user_pool_id}')
+        logger.info(f'Using Cognito user pool ID: {user_pool_id}')
         sub_to_email_mapping = get_sub_to_email_mapping(user_pool_id, session_config)
 
         def worker_id_to_email(worker_id):
             if worker_id not in cognito_user_ids:
-                lg.warning(f'No email found for worker ID: {worker_id}')
+                logger.warning(f'No email found for worker ID: {worker_id}')
                 return worker_id
 
             cognito_user_id = cognito_user_ids[worker_id]
 
             if cognito_user_id not in sub_to_email_mapping:
-                lg.warning(f'No email found for worker ID: {worker_id}')
+                logger.warning(f'No email found for worker ID: {worker_id}')
                 return cognito_user_id
 
             return sub_to_email_mapping[cognito_user_id]
