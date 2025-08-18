@@ -19,8 +19,9 @@ class S3Uri:
         self.parsed_uri = urlparse(s3_uri)
         self.bucket = self.parsed_uri.netloc
         self.path = self.parsed_uri.path.lstrip('/')
-        self.filename = self.parsed_uri.path.split('/')[-1]
-        self.parent_uri = 's3://' + self.bucket + '/' + '/'.join(self.path.split('/')[:-1])
+        self.path_split = self.path.split('/')
+        self.filename = self.path_split[-1] if self.path_split else ''
+        self.parent_uri = 's3://' + self.bucket + '/' + '/'.join(self.path_split[:-1])
 
     def __str__(self):
         return self.s3_uri
@@ -62,7 +63,7 @@ def ls_cmd(obj, s3_path):
     def print_object(item):
         logger.info(item['Key'])  # type: ignore
 
-    list_all_objects(client, s3_path, print_object)
+    list_all_objects(s3_path, print_object, s3_client=client)
 
 
 @s3_group.command(name='view-dict')
@@ -132,7 +133,10 @@ def list_all_objects(
     client = s3_client or get_s3_client()
 
     paginator = client.get_paginator('list_objects_v2')
-    page_iterator = paginator.paginate(Bucket=s3_uri.bucket, Prefix=s3_uri.path)
+    page_iterator = paginator.paginate(
+        Bucket=s3_uri.bucket,
+        Prefix=s3_uri.path
+    )
 
     for page in page_iterator:
         if 'Contents' in page:
@@ -279,13 +283,14 @@ def fast_download_s3_files(
             logger.debug(future.result())
 
 
-def sync_folder_from_s3(s3_uri, local_dir, *, s3_client=None):
+def sync_folder_from_s3(s3_uri, local_dir, *, s3_client=None, recursive=False):
     '''Recursively download a folder from S3 using fast_download_s3_files
 
     Args:
         s3_uri: S3 URI to the folder
         local_dir: Local directory to save the folder
         s3_client: S3 client to use for the download (None uses the default client)
+        recursive: Recursively download the folder
 
     Note: This function always preserves the folder structure in the local directory,
         including filenames.
@@ -302,11 +307,19 @@ def sync_folder_from_s3(s3_uri, local_dir, *, s3_client=None):
     def on_object(obj):
         key = obj['Key']
         relative_path = Path(key).relative_to(s3_uri.path)
+
+        if not recursive and relative_path.parent != Path(s3_uri.filename):
+            return
+
         local_path = local_dir / relative_path
         targets.append((s3_uri.bucket, key, local_path))
 
     s3_client = s3_client or get_s3_client()
-    list_all_objects(s3_uri, on_object, s3_client=s3_client)
+
+    list_all_objects(
+        s3_uri, on_object,
+        s3_client=s3_client
+    )
 
     logger.debug(f'Syncing {s3_uri} to {local_dir} with {len(targets)} files')
 
