@@ -283,7 +283,14 @@ def fast_download_s3_files(
             logger.debug(future.result())
 
 
-def sync_folder_from_s3(s3_uri, local_dir, *, s3_client=None, recursive=False):
+def sync_folder_from_s3(
+    s3_uri,
+    local_dir,
+    *,
+    s3_client=None,
+    recursive=False,
+    concurrency=100
+):
     '''Recursively download a folder from S3 using fast_download_s3_files
 
     Args:
@@ -291,6 +298,7 @@ def sync_folder_from_s3(s3_uri, local_dir, *, s3_client=None, recursive=False):
         local_dir: Local directory to save the folder
         s3_client: S3 client to use for the download (None uses the default client)
         recursive: Recursively download the folder
+        concurrency: Number of concurrent downloads
 
     Note: This function always preserves the folder structure in the local directory,
         including filenames.
@@ -328,5 +336,6 @@ def sync_folder_from_s3(s3_uri, local_dir, *, s3_client=None, recursive=False):
         targets,
         create_folders=True,
         skip_existing=True,
-        s3_client=s3_client
+        s3_client=s3_client,
+        concurrency=concurrency
     )
