@@ -1,4 +1,5 @@
 import tempfile
+from typing import Callable
 import uuid
 from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor
@@ -43,11 +44,7 @@ def delete_bucket_cmd(obj, bucket_name):
     '''Clean and delete an S3 bucket completely'''
     try:
         client = get_s3_client(obj)
-
-        # First empty the bucket
         delete_bucket_contents(client, bucket_name)
-
-        # Then delete the bucket itself
         delete_bucket(client, bucket_name)
 
     except Exception as e:
@@ -114,15 +111,45 @@ def view_dict_cmd(obj, in_format, out_format, s3_path):
     click.echo(dumper(d))
 
 
+@s3_group.command(name='sync')
+@click.option(
+    '--recursive', is_flag=True
+)
+@click.option(
+    '--skip-existing', is_flag=True
+)
+@click.option(
+    '--concurrency', type=int, default=100
+)
+@click.argument(
+    's3_path'
+)
+@click.argument(
+    'local_path', type=click.Path(file_okay=False, dir_okay=True, path_type=Path)
+)
+@click.pass_obj
+def sync_cmd(obj, recursive, skip_existing, concurrency, s3_path, local_path):
+    logger.info(f'Syncing {s3_path} to {local_path}')
+
+    sync_folder_from_s3(
+        s3_path, local_path,
+        session_config=obj,
+        recursive=recursive,
+        skip_existing=skip_existing,
+        concurrency=concurrency
+    )
+
+
 def json_dumper(d):
     return benedict.to_json(d, indent=2)
 
 
 def list_all_objects(
     s3_path: str | S3Uri,
-    on_object,
+    on_object: Callable[[dict], None],
     *,
-    s3_client: S3Client | None = None
+    s3_client: S3Client | None = None,
+    session_config: dict = {}
 ):
     '''List all objects in an S3 bucket and call on_object for each'''
     if isinstance(s3_path, str):
@@ -130,7 +157,7 @@ def list_all_objects(
     else:
         s3_uri = s3_path
 
-    client = s3_client or get_s3_client()
+    client = s3_client or get_s3_client(session_config=session_config)
 
     paginator = client.get_paginator('list_objects_v2')
     page_iterator = paginator.paginate(
@@ -141,7 +168,7 @@ def list_all_objects(
     for page in page_iterator:
         if 'Contents' in page:
             for obj in page['Contents']:
-                on_object(obj)
+                on_object(dict(obj))
 
 
 def delete_bucket_contents(client, bucket_name):
@@ -163,7 +190,10 @@ def delete_bucket_contents(client, bucket_name):
                     Key=version['Key'],
                     VersionId=version['VersionId']
                 )
-                logger.debug(f'Deleted object: {version["Key"]} (version {version["VersionId"]})')
+
+                logger.debug(
+                    f'Deleted object: {version["Key"]} (version {version["VersionId"]})'
+                )
 
         # Delete delete markers if they exist
         if 'DeleteMarkers' in page:
@@ -173,7 +203,10 @@ def delete_bucket_contents(client, bucket_name):
                     Key=marker['Key'],
                     VersionId=marker['VersionId']
                 )
-                logger.debug(f'Deleted delete marker: {marker["Key"]} (version {marker["VersionId"]})')
+
+                logger.debug(
+                    f'Deleted delete marker: {marker["Key"]} (version {marker["VersionId"]})'
+                )
 
     # Delete objects in a non-versioned bucket
     paginator = client.get_paginator('list_objects_v2')
@@ -217,8 +250,7 @@ def fast_download_s3_files(
     skip_existing: bool = False,
     create_folders: bool = True,
     concurrency: int = 100,
-    session_config: dict = {},
-    s3_client: S3Client | None = None
+    session_config: dict = {}
 ):
     '''Download a list of files from S3 in parallel.
 
@@ -235,13 +267,8 @@ def fast_download_s3_files(
         'max_pool_connections': int(1.5 * concurrency)
     }
 
-    client = s3_client or get_s3_client(session_config, core_config=boto_config)
-
-    config = {
-        'transfer_config': TransferConfig(
-            use_threads=False
-        )
-    }
+    client = get_s3_client(session_config, core_config=boto_config)
+    transfer_config = TransferConfig(use_threads=False)
 
     logger.debug(f'Fast downloading {len(targets)} files')
 
@@ -263,8 +290,7 @@ def fast_download_s3_files(
             return f'Skipping {key} because it already exists'
 
         client.download_file(
-            bucket_name, key, local_path,
-            Config=config['transfer_config']
+            bucket_name, key, local_path, Config=transfer_config
         )
 
         return f'Successfully downloaded {key}'
@@ -284,12 +310,13 @@ def fast_download_s3_files(
 
 
 def sync_folder_from_s3(
-    s3_uri,
-    local_dir,
+    s3_uri: str | S3Uri,
+    local_dir: Path,
     *,
-    s3_client=None,
-    recursive=False,
-    concurrency=100
+    session_config={},
+    recursive: bool = False,
+    skip_existing: bool = True,
+    concurrency: int = 100
 ):
     '''Recursively download a folder from S3 using fast_download_s3_files
 
@@ -322,12 +349,12 @@ def sync_folder_from_s3(
         local_path = local_dir / relative_path
         targets.append((s3_uri.bucket, key, local_path))
 
-    s3_client = s3_client or get_s3_client()
+    s3_client = get_s3_client(session_config)
+    list_all_objects(s3_uri, on_object, s3_client=s3_client)
 
-    list_all_objects(
-        s3_uri, on_object,
-        s3_client=s3_client
-    )
+    if not targets:
+        logger.debug(f'No files found in {s3_uri}')
+        return
 
     logger.debug(f'Syncing {s3_uri} to {local_dir} with {len(targets)} files')
 
@@ -335,7 +362,7 @@ def sync_folder_from_s3(
     fast_download_s3_files(
         targets,
         create_folders=True,
-        skip_existing=True,
-        s3_client=s3_client,
+        skip_existing=skip_existing,
+        session_config=session_config,
         concurrency=concurrency
     )

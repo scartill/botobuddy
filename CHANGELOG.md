@@ -1,6 +1,12 @@
 # 0.3.6
 
-- Added `concurrency` parameter to `botobuddy.s3.sync_folder_from_s3` function
+- Enhanced logging
+- Added parameters to `botobuddy.s3.sync_folder_from_s3` function:
+    - `recursive`
+    - `skip_existing`
+    - `concurrency`
+- Added `botobuddy s3 sync` command
+- Fixed s3 client creation issue for `sync_folder_from_s3` function
 
 # 0.3.5
 
