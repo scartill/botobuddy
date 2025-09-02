@@ -20,12 +20,25 @@ class S3Uri:
         self.parsed_uri = urlparse(s3_uri)
         self.bucket = self.parsed_uri.netloc
         self.path = self.parsed_uri.path.lstrip('/')
-        self.path_split = self.path.split('/')
-        self.filename = self.path_split[-1] if self.path_split else ''
-        self.parent_uri = 's3://' + self.bucket + '/' + '/'.join(self.path_split[:-1])
+        self.path_list = self.path.split('/')
+        self.filename = self.path_list[-1] if self.path_list else None
+        self.key = self.path
+
+    def parent(self):
+        if not self.path_list:
+            return None
+
+        parent_path = '/'.join(self.path_list[:-1])
+        return S3Uri(f's3://{self.bucket}/{parent_path}')
 
     def __str__(self):
         return self.s3_uri
+
+    def __div__(self, other):
+        if isinstance(other, str):
+            return S3Uri(self.s3_uri.rstrip('/') + '/' + other)
+        else:
+            raise ValueError(f'Invalid type: {type(other)}')
 
 
 def import_commands(parent):
@@ -343,7 +356,7 @@ def sync_folder_from_s3(
         key = obj['Key']
         relative_path = Path(key).relative_to(s3_uri.path)
 
-        if not recursive and relative_path.parent != Path(s3_uri.filename):
+        if not recursive and relative_path.parent != Path('.'):
             return
 
         local_path = local_dir / relative_path
