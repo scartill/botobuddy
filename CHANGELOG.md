@@ -1,3 +1,8 @@
+# 0.3.7
+
+- Added the `/` operator to `botobuddy.s3.S3Uri` class
+- Downgraded `click` to ">=8.1.0" to fix compatibility issues
+
 # 0.3.6
 
 - Enhanced logging
@@ -22,7 +27,7 @@
 
 # 0.3.2
 
-- Downgraded rich to 13.0.0 to fix compatibility issues with `aws-sam-cli`
+- Downgraded `rich` to "13.0.0" to fix compatibility issues with `aws-sam-cli`
 - Added `botobuddy --version` option
 
 # 0.3.1
