@@ -34,7 +34,7 @@ class S3Uri:
     def __str__(self):
         return self.s3_uri
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         if isinstance(other, str):
             return S3Uri(self.s3_uri.rstrip('/') + '/' + other)
         else:
