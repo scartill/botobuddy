@@ -1,5 +1,5 @@
 import tempfile
-from typing import Callable
+from typing import Callable, Any
 import uuid
 from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor
@@ -14,8 +14,18 @@ from botobuddy.common import get_s3_client
 from botobuddy.logger import logger
 
 
+type S3UriCoersible = Any
+
+
 class S3Uri:
-    def __init__(self, s3_uri: str):
+    def __init__(self, s3_uri: S3UriCoersible):
+        if isinstance(s3_uri, str):
+            pass
+        elif isinstance(s3_uri, S3Uri):
+            s3_uri = str(s3_uri)
+        else:
+            raise ValueError(f'Invalid type: {type(s3_uri)}. Must be a string or a S3Uri')
+
         self.s3_uri = s3_uri
         self.parsed_uri = urlparse(s3_uri)
         self.bucket = self.parsed_uri.netloc
@@ -36,9 +46,15 @@ class S3Uri:
 
     def __truediv__(self, other):
         if isinstance(other, str):
-            return S3Uri(self.s3_uri.rstrip('/') + '/' + other)
+            other_str = other
+        elif isinstance(other, S3Uri):
+            other_str = str(other)
+        elif isinstance(other, Path):
+            other_str = other.as_posix()
         else:
             raise ValueError(f'Invalid type: {type(other)}')
+
+        return S3Uri(self.s3_uri.rstrip('/') + '/' + other_str)
 
 
 def import_commands(parent):
@@ -262,7 +278,7 @@ def fast_download_s3_files(
     *,
     skip_existing: bool = False,
     create_folders: bool = True,
-    concurrency: int = 100,
+    concurrency: int = 10,
     session_config: dict = {}
 ):
     '''Download a list of files from S3 in parallel.
@@ -329,7 +345,7 @@ def sync_folder_from_s3(
     session_config={},
     recursive: bool = False,
     skip_existing: bool = True,
-    concurrency: int = 100
+    concurrency: int = 10
 ):
     '''Recursively download a folder from S3 using fast_download_s3_files
 

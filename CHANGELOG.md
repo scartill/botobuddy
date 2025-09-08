@@ -1,3 +1,8 @@
+# 0.3.8
+
+- Fixed the `/` operator of the `botobuddy.s3.S3Uri` class
+- Reduced the default `concurrency` parameter value to 10 for fast downloads
+
 # 0.3.7
 
 - Added the `/` operator to `botobuddy.s3.S3Uri` class
