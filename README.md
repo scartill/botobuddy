@@ -14,14 +14,15 @@
 - **export-hosted-zone**: Export all resource record sets from a specified hosted zone.
 - **import-hosted-zone**: Import resource record sets into a specified hosted zone from a file, skipping NS and SOA records.
 
-
 ### SageMaker Commands
 - **human-effort**: Generate a report on the human effort that a SageMaker job required.
 
 
 ## Noteable Functions and Classes
 
-### `botobuddy.utils.dslice`
+### General
+
+#### `botobuddy.utils.dslice`
 
 This function is used to slice a dictionary into a new dictionary, using the keys to define the slice.
 Each key can be a string, or a dictionary with the following keys:
@@ -30,9 +31,17 @@ Each key can be a string, or a dictionary with the following keys:
 - `d`: the default value
 - `n`: the name of the key in the result dictionary
 
-### `botobuddy.s3.S3Uri`
+### S3
+
+#### `botobuddy.s3.S3Uri`
 
 This class is used to represent an S3 URI, and provides methods to parse and manipulate it.
+
+### API Gateway
+
+#### `botobuddy.apigw.get_api_uri`
+
+This function is used to get the URI of an API Gateway API.
 
 ## Development Environment Quickstart
 
