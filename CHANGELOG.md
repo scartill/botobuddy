@@ -1,3 +1,9 @@
+# 0.4.0
+
+- Added `botobuddy.awslambda.response` function
+- Added `botobuddy.awslambda.request_params` function
+- Added `botobuddy.secman.get_sm_secret` function
+
 # 0.3.8
 
 - Fixed the `/` operator of the `botobuddy.s3.S3Uri` class
