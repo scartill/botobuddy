@@ -9,6 +9,8 @@ from types_boto3_route53 import Route53Client
 from types_boto3_sts import STSClient
 from types_boto3_sagemaker import SageMakerClient
 from types_boto3_cognito_idp import CognitoIdentityProviderClient
+from types_boto3_cloudformation import CloudFormationClient
+from types_boto3_apigateway import APIGatewayClient
 
 from botobuddy.logger import logger
 
@@ -20,7 +22,9 @@ type AWSClient = (
     Route53Client |
     STSClient |
     SageMakerClient |
-    CognitoIdentityProviderClient
+    CognitoIdentityProviderClient |
+    CloudFormationClient |
+    APIGatewayClient
 )
 
 
@@ -132,6 +136,14 @@ def get_sagemaker_client(session_config={}) -> SageMakerClient:
 
 def get_cognito_client(session_config={}) -> CognitoIdentityProviderClient:
     return cast(CognitoIdentityProviderClient, get_aws_client('cognito-idp', session_config))
+
+
+def get_cloudformation_client(session_config={}) -> CloudFormationClient:
+    return cast(CloudFormationClient, get_aws_client('cloudformation', session_config))
+
+
+def get_apigateway_client(session_config={}) -> APIGatewayClient:
+    return cast(APIGatewayClient, get_aws_client('apigateway', session_config))
 
 
 # Resource factories

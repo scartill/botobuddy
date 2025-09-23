@@ -26,7 +26,7 @@ dependencies = [
     { name = "python-benedict", extra = ["s3", "toml", "yaml"] },
     { name = "randomname" },
     { name = "rich" },
-    { name = "types-boto3", extra = ["cognito-idp", "essential", "route53", "sagemaker", "sts"] },
+    { name = "types-boto3", extra = ["apigateway", "cloudformation", "cognito-idp", "essential", "route53", "sagemaker", "sts"] },
 ]
 
 [package.dev-dependencies]
@@ -41,7 +41,7 @@ requires-dist = [
     { name = "python-benedict", extras = ["s3", "toml", "yaml"], specifier = ">=0.34.1" },
     { name = "randomname", specifier = ">=0.2.1" },
     { name = "rich", specifier = ">=13.0.0" },
-    { name = "types-boto3", extras = ["essential", "route53", "sts", "sagemaker", "cognito-idp"], specifier = ">=1.38.35" },
+    { name = "types-boto3", extras = ["essential", "route53", "sts", "sagemaker", "cognito-idp", "cloudformation", "apigateway"], specifier = ">=1.38.35" },
 ]
 
 [package.metadata.requires-dev]
@@ -656,6 +656,12 @@ wheels = [
 ]
 
 [package.optional-dependencies]
+apigateway = [
+    { name = "types-boto3-apigateway" },
+]
+cloudformation = [
+    { name = "types-boto3-cloudformation" },
+]
 cognito-idp = [
     { name = "types-boto3-cognito-idp" },
 ]
@@ -676,6 +682,15 @@ sagemaker = [
 ]
 sts = [
     { name = "types-boto3-sts" },
+]
+
+[[package]]
+name = "types-boto3-apigateway"
+version = "1.38.36"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a4/41/6f678145bc340b1ae59e8764b4e4545180bf3f042a199706117e171e8e21/types_boto3_apigateway-1.38.36.tar.gz", hash = "sha256:3681232a938bc9172a1cfdc49e15513e382cab03e48274760447824048cbbe80", size = 45279, upload-time = "2025-06-12T19:42:13.683Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/37/8c/03bc3a294f25ace32ece55f2a9b0857f17bd1ee7745e7f2ab8173481d753/types_boto3_apigateway-1.38.36-py3-none-any.whl", hash = "sha256:3721bfc7f0978ae7166b4f188e88439d42f9c429e459481a4e6b1ed7bdfdedde", size = 51318, upload-time = "2025-06-12T19:42:10.7Z" },
 ]
 
 [[package]]
