@@ -17,6 +17,15 @@
 ### SageMaker Commands
 - **human-effort**: Generate a report on the human effort that a SageMaker job required.
 
+## Session Configuration
+
+This library uses the `session_config` transversely for AWS Session configuration and other general configuration parameters, generally supplied to the CLI.
+
+This is a dictionary with the following keys, all optional:
+
+- `profile`: The AWS profile to use.
+- `region`: The AWS region to use.
+- `assume_role`: The AWS role to assume.
 
 ## Noteable Functions and Classes
 
@@ -43,19 +52,25 @@ This class is used to represent an S3 URI, and provides methods to parse and man
 
 This function is used to get the URI of an API Gateway API.
 
+### Lambda
+
+#### `botobuddy.awslambda.response`
+
+This function is used to return a response from a Lambda function.
+
+#### `botobuddy.awslambda.request_params`
+
+This function is used to get the parameters passed to REST API-based Lambda function.
+
+### Secrets Manager
+
+#### `botobuddy.secman.get_sm_secret`
+
+This utility is used to get a JSON-formatted secret from Secrets Manager.
+
 ## Development Environment Quickstart
 
 ```pwsh
 uv sync
 uv run botobuddy --help
 ```
-
-## Session Configuration
-
-This library uses the `session_config` transversely for AWS Session configuration and other general configuration parameters, generally supplied to the CLI.
-
-This is a dictionary with the following keys, all optional:
-
-- `profile`: The AWS profile to use.
-- `region`: The AWS region to use.
-- `assume_role`: The AWS role to assume.
