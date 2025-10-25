@@ -11,6 +11,7 @@ from types_boto3_sagemaker import SageMakerClient
 from types_boto3_cognito_idp import CognitoIdentityProviderClient
 from types_boto3_cloudformation import CloudFormationClient
 from types_boto3_apigateway import APIGatewayClient
+from types_boto3_secretsmanager import SecretsManagerClient
 
 from botobuddy.logger import logger
 
@@ -24,7 +25,8 @@ type AWSClient = (
     SageMakerClient |
     CognitoIdentityProviderClient |
     CloudFormationClient |
-    APIGatewayClient
+    APIGatewayClient |
+    SecretsManagerClient
 )
 
 
@@ -144,6 +146,10 @@ def get_cloudformation_client(session_config={}) -> CloudFormationClient:
 
 def get_apigateway_client(session_config={}) -> APIGatewayClient:
     return cast(APIGatewayClient, get_aws_client('apigateway', session_config))
+
+
+def get_secretsmanager_client(session_config={}) -> SecretsManagerClient:
+    return cast(SecretsManagerClient, get_aws_client('secretsmanager', session_config))
 
 
 # Resource factories

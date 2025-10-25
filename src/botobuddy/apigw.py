@@ -1,8 +1,8 @@
 from botobuddy.common import get_apigateway_client
 
 
-def get_api_uri(api_name: str) -> str:
-    client = get_apigateway_client()
+def get_api_uri(api_name: str, session_config: dict = {}) -> str:
+    client = get_apigateway_client(session_config)
 
     for api in client.get_rest_apis()['items']:
         if api['name'] != f'{api_name}':
