@@ -1,3 +1,7 @@
+# 0.5.0
+
+- Added `botobuddy.awslambda.get_this_url` function
+
 # 0.4.0
 
 - Added `botobuddy.awslambda.response` function

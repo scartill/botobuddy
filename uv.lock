@@ -18,7 +18,7 @@ wheels = [
 
 [[package]]
 name = "botobuddy"
-version = "0.4.0"
+version = "0.5.0"
 source = { editable = "." }
 dependencies = [
     { name = "boto3" },
@@ -26,7 +26,7 @@ dependencies = [
     { name = "python-benedict", extra = ["s3", "toml", "yaml"] },
     { name = "randomname" },
     { name = "rich" },
-    { name = "types-boto3", extra = ["apigateway", "cloudformation", "cognito-idp", "essential", "route53", "sagemaker", "sts"] },
+    { name = "types-boto3", extra = ["apigateway", "cloudformation", "cognito-idp", "essential", "route53", "sagemaker", "secretsmanager", "sts"] },
 ]
 
 [package.dev-dependencies]
@@ -41,7 +41,7 @@ requires-dist = [
     { name = "python-benedict", extras = ["s3", "toml", "yaml"], specifier = ">=0.34.1" },
     { name = "randomname", specifier = ">=0.2.1" },
     { name = "rich", specifier = ">=13.0.0" },
-    { name = "types-boto3", extras = ["essential", "route53", "sts", "sagemaker", "cognito-idp", "cloudformation", "apigateway"], specifier = ">=1.38.35" },
+    { name = "types-boto3", extras = ["essential", "route53", "sts", "sagemaker", "cognito-idp", "cloudformation", "apigateway", "secretsmanager"], specifier = ">=1.38.35" },
 ]
 
 [package.metadata.requires-dev]
@@ -680,6 +680,9 @@ route53 = [
 sagemaker = [
     { name = "types-boto3-sagemaker" },
 ]
+secretsmanager = [
+    { name = "types-boto3-secretsmanager" },
+]
 sts = [
     { name = "types-boto3-sts" },
 ]
@@ -772,6 +775,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/4a/06/59eeb4e18305eae81a271a74e8079e7e4f540d9b0480254f7501cc51af19/types_boto3_sagemaker-1.38.40.tar.gz", hash = "sha256:a5fd269a5ff0bd40ee04b9d8e9ce002c4a2ada1dd1e9c11aaeb38275afb1cea2", size = 211831, upload-time = "2025-06-19T19:25:50.691Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4e/e7/a4d61e8830a8a5e1d558228daf0013a24229f83f96a06724844bc718ce2f/types_boto3_sagemaker-1.38.40-py3-none-any.whl", hash = "sha256:c4754b1cbcb8bbcfbe5f52b820083140c55990b6f888efedf57213684c8cacd9", size = 215463, upload-time = "2025-06-19T19:25:48.142Z" },
+]
+
+[[package]]
+name = "types-boto3-secretsmanager"
+version = "1.38.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/82/cf/6cb43cd8cc1a5e6dcf2bc14cb099c739e9e16bbeb0df39db7bcff259f606/types_boto3_secretsmanager-1.38.0.tar.gz", hash = "sha256:4e30d5eb7721fdcd89e88e040a8368688f65b45c6741e939b5787eca406f0ee7", size = 19933, upload-time = "2025-04-22T21:32:03.355Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/99/37/2bfb66f23cefd22d608ab0aa139422fe62694521dab16e4dac61e97388d5/types_boto3_secretsmanager-1.38.0-py3-none-any.whl", hash = "sha256:764c389e39a13cd96790156d364219c0ec56cb002b9150ce23f053f736801f9c", size = 26727, upload-time = "2025-04-22T21:32:00.295Z" },
 ]
 
 [[package]]
