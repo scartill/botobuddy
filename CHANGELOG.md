@@ -1,3 +1,7 @@
+# 0.5.1
+
+- Added add session config support to secrets manager client
+
 # 0.5.0
 
 - Added `botobuddy.awslambda.get_this_url` function
