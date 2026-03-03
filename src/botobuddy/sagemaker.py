@@ -112,7 +112,11 @@ def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict = {
                         # Replace colons with underscores to avoid issues with Windows paths
                         target_file_path = Path(
                             str(target_dir / s3_relative_path).replace(':', '_')
-                        )
+                        ).resolve()
+
+                        if not target_file_path.is_relative_to(target_dir.resolve()):
+                            logger.warning(f"Skipping {key} due to path traversal attempt outside {target_dir}")
+                            continue
 
                         targets.append((manifest_uri.bucket, key, target_file_path))
 
