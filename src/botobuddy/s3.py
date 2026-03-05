@@ -351,7 +351,12 @@ def sync_folder_from_s3(
         if not recursive and relative_path.parent != Path('.'):
             return
 
-        local_path = local_dir / relative_path
+        local_path = (local_dir / relative_path).resolve()
+
+        if not local_path.is_relative_to(local_dir.resolve()):
+            logger.warning(f"Skipping {key} due to path traversal attempt outside {local_dir}")
+            return # Skip this file and return early from on_object
+
         targets.append((s3_uri.bucket, key, local_path))
 
     s3_client = get_s3_client(session_config)
