@@ -1,3 +1,7 @@
+# 0.5.2
+
+- Security-related bugfixes
+
 # 0.5.1
 
 - Added add session config support to secrets manager client
