@@ -1,6 +1,6 @@
+import os
 import tempfile
 from typing import Callable, Any
-import uuid
 from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -124,11 +124,7 @@ def view_dict_cmd(obj, in_format, out_format, s3_path):
             raise UserWarning(f'Unsupported format: {in_format}')
 
     s3_uri = S3Uri(s3_path)
-    dirpath = tempfile.gettempdir()
-    filename = str(uuid.uuid4())
-    filepath = Path(dirpath) / filename
     s3 = get_s3_client(obj)
-    s3.download_file(s3_uri.bucket, s3_uri.path, str(filepath))
 
     loader = loaders[in_format]
     dumper = dumpers[in_format]
@@ -136,7 +132,18 @@ def view_dict_cmd(obj, in_format, out_format, s3_path):
     if out_format != 'original':
         dumper = dumpers[out_format]
 
-    d = loader(str(filepath))
+    fd, filepath = tempfile.mkstemp()
+    os.close(fd)
+
+    try:
+        s3.download_file(s3_uri.bucket, s3_uri.path, filepath)
+        d = loader(filepath)
+    finally:
+        try:
+            os.remove(filepath)
+        except OSError:
+            pass
+
     click.echo(dumper(d))
 
 
