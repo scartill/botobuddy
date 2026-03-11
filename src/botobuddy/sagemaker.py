@@ -190,23 +190,11 @@ def get_sub_to_email_mapping(user_pool_id: str, session_config: dict = {}):
 
     client = get_cognito_client(session_config)
     sub_email_map = {}
-    pagination_token = None
 
     try:
-        while True:
-            if pagination_token:
-                response = client.list_users(
-                    UserPoolId=user_pool_id,
-                    PaginationToken=pagination_token
-                )
-            else:
-                response = client.list_users(
-                    UserPoolId=user_pool_id
-                )
-
-            users = response.get('Users', [])
-
-            for user_entry in users:
+        paginator = client.get_paginator('list_users')
+        for page in paginator.paginate(UserPoolId=user_pool_id):
+            for user_entry in page.get('Users', []):
                 username = user_entry.get('Username')
                 sub = None
 
@@ -220,10 +208,6 @@ def get_sub_to_email_mapping(user_pool_id: str, session_config: dict = {}):
                     sub_email_map[sub] = username
                 elif sub:
                     print(f"Warning: User with sub '{sub}' found but no Username (email) to map.")
-
-            pagination_token = response.get('PaginationToken')
-            if not pagination_token:
-                break  # No more pages
 
         return sub_email_map
 
