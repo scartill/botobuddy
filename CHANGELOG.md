@@ -1,3 +1,9 @@
+# 0.5.3
+
+- Fixed secure temp file creation and cleanup for `s3.download_file` in `view_dict_cmd`
+- Added CI/CD workflow for publishing to PyPI
+- Added `GEMINI.md` file with project context and conventions
+
 # 0.5.2
 
 - Security-related bugfixes
