@@ -1,3 +1,11 @@
+# 0.6.0
+
+- Added SSM Parameter Store client and `get_ssm_parameter` utility
+- Added Lambda client support and `get_function_url` utility
+- Added comprehensive docstrings across all modules
+- Switched to `hatchling` build system
+- Refactored `get_sub_to_email_mapping` to use boto3 paginator
+
 # 0.5.3
 
 - Fixed secure temp file creation and cleanup for `s3.download_file` in `view_dict_cmd`
