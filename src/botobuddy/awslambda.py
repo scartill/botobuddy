@@ -1,12 +1,14 @@
-
 import json
 from decimal import Decimal
+
+from botobuddy.common import get_lambda_client
 
 
 class DynamoFriendlyEncoder(json.JSONEncoder):
     """
     A JSON encoder that converts Decimal objects to integers.
     """
+
     def default(self, obj):
         if isinstance(obj, Decimal):
             return int(obj)
@@ -28,10 +30,7 @@ def response(data_or_error=None, rc=200):
     - body: The body to return in the response.
     """
     if rc != 200:
-        payload = {
-            'IsSuccessful': False,
-            'Error': data_or_error
-        }
+        payload = {'IsSuccessful': False, 'Error': data_or_error}
     else:
         payload = {'IsSuccessful': True}
 
@@ -43,9 +42,9 @@ def response(data_or_error=None, rc=200):
         'headers': {
             'Access-Control-Allow-Headers': '*',
             'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'OPTIONS,GET,POST,PUT,DELETE'
+            'Access-Control-Allow-Methods': 'OPTIONS,GET,POST,PUT,DELETE',
         },
-        'body': json.dumps(payload, cls=DynamoFriendlyEncoder)
+        'body': json.dumps(payload, cls=DynamoFriendlyEncoder),
     }
 
 
@@ -74,9 +73,7 @@ def request_params(event):
 
     if method == 'POST' or method == 'PUT':
         if 'body' not in event:
-            raise UserWarning(
-                'A request body must be present for POST and PUT requests'
-            )
+            raise UserWarning('A request body must be present for POST and PUT requests')
 
         params.update(json.loads(event['body']))
 
@@ -92,3 +89,17 @@ def get_this_url(event):
     domainName = requestContext['domainName']
     path = requestContext['path']
     return f'https://{domainName}{path}'
+
+
+def get_function_url(function_name, session_config={}):
+    client = get_lambda_client(session_config)
+    try:
+        response = client.get_function_url_config(FunctionName=function_name)
+
+        url = response['FunctionUrl']
+        return url
+
+    except client.exceptions.ResourceNotFoundException as e:
+        raise ValueError(
+            f'Function URL config for {function_name} not found. Ensure it is deployed with a Function URL.'
+        ) from e

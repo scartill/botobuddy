@@ -26,7 +26,7 @@ dependencies = [
     { name = "python-benedict", extra = ["s3", "toml", "yaml"] },
     { name = "randomname" },
     { name = "rich" },
-    { name = "types-boto3", extra = ["apigateway", "cloudformation", "cognito-idp", "essential", "route53", "sagemaker", "secretsmanager", "ssm", "sts"] },
+    { name = "types-boto3", extra = ["apigateway", "cloudformation", "cognito-idp", "essential", "lambda", "route53", "sagemaker", "secretsmanager", "ssm", "sts"] },
 ]
 
 [package.dev-dependencies]
@@ -41,7 +41,7 @@ requires-dist = [
     { name = "python-benedict", extras = ["s3", "toml", "yaml"], specifier = ">=0.34.1" },
     { name = "randomname", specifier = ">=0.2.1" },
     { name = "rich", specifier = ">=13.0.0" },
-    { name = "types-boto3", extras = ["essential", "route53", "sts", "sagemaker", "cognito-idp", "cloudformation", "apigateway", "secretsmanager", "ssm"], specifier = ">=1.38.35" },
+    { name = "types-boto3", extras = ["essential", "route53", "sts", "sagemaker", "cognito-idp", "cloudformation", "apigateway", "secretsmanager", "ssm", "lambda"], specifier = ">=1.38.35" },
 ]
 
 [package.metadata.requires-dev]
@@ -673,6 +673,9 @@ essential = [
     { name = "types-boto3-rds" },
     { name = "types-boto3-s3" },
     { name = "types-boto3-sqs" },
+]
+lambda = [
+    { name = "types-boto3-lambda" },
 ]
 route53 = [
     { name = "types-boto3-route53" },
