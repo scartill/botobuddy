@@ -4,7 +4,7 @@ import json
 from botobuddy.common import get_secretsmanager_client, SecretsManagerClient
 
 
-def get_sm_secret(name, plain=False, session_config={}, sm_client: Optional[SecretsManagerClient] = None):
+def get_sm_secret(name, plain: bool = False, session_config=None, sm_client: Optional[SecretsManagerClient] = None):
     """Retrieve a secret from AWS Secrets Manager.
 
     Args:
@@ -18,6 +18,9 @@ def get_sm_secret(name, plain=False, session_config={}, sm_client: Optional[Secr
     Returns:
         Union[dict, str]: The secret value, either as a dictionary or a string.
     """
+    if session_config is None:
+        session_config = {}
+
     sm = sm_client or get_secretsmanager_client(session_config)
     get_secret_value_response = sm.get_secret_value(SecretId=name)
     secret_string = get_secret_value_response['SecretString']
