@@ -15,11 +15,17 @@ from botobuddy.s3 import fast_download_s3_files, S3Uri
 
 
 def import_commands(parent):
+    """Register SageMaker commands with the main CLI group.
+
+    Args:
+        parent (click.Group): The parent CLI group.
+    """
     parent.add_command(sagemaker_group)
 
 
 @click.group(name='sagemaker')
 def sagemaker_group():
+    """SageMaker operations and utilities."""
     pass
 
 
@@ -35,6 +41,14 @@ def sagemaker_group():
 )
 @click.argument('job_name', type=str)
 def analyse_human_effort_command(obj, job_name, output_json, data_dir):
+    """Analyse and report human effort for a labeling job.
+
+    Args:
+        obj (dict): Global Click configuration object.
+        job_name (str): Name of the SageMaker labeling job.
+        output_json (bool): Whether to output the report in JSON format.
+        data_dir (str): Local directory to store intermediate data.
+    """
     data_dir = Path(data_dir)
     report_data = analyse_human_effort(job_name, data_dir, session_config=obj)
 

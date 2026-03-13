@@ -5,11 +5,17 @@ from botobuddy.logger import logger
 
 
 def import_commands(parent):
+    """Import dynamo commands to the parent Click group.
+
+    Args:
+        parent: The parent Click group to add commands to.
+    """
     parent.add_command(dynamo_group)
 
 
 @click.group(name='dynamo')
 def dynamo_group():
+    """DynamoDB related commands."""
     pass
 
 
@@ -17,14 +23,29 @@ def dynamo_group():
 @click.pass_obj
 @click.argument('table_name')
 def truncate_table_cmd(obj, table_name):
-    '''Truncate a DynamoDB table'''
+    """Truncate a DynamoDB table.
+
+    Args:
+        obj: The context object containing session configuration.
+        table_name: The name of the table to truncate.
+    """
     client = get_dynamodb_resource(obj)
     counter = truncate_table(client, table_name)
     logger.info(f'Deleted {counter} items')
 
 
 def truncate_table(client: DynamoDBServiceResource, table_name: str):
-    '''Implementation to truncate a DynamoDB table'''
+    """Implementation to truncate a DynamoDB table.
+
+    Scans the table for all keys and deletes items in batches.
+
+    Args:
+        client: The Boto3 DynamoDB resource.
+        table_name: The name of the table to truncate.
+
+    Returns:
+        The number of items deleted.
+    """
     table = client.Table(table_name)
 
     # Get the table keys

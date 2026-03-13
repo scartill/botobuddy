@@ -23,13 +23,20 @@ import botobuddy.sagemaker as sagemaker
 @click.version_option(version=version('botobuddy'))
 @click.pass_context
 def cli(ctx, verbose, **kwargs):
-    '''Extended AWS Operations CLI'''
+    """Extended AWS Operations CLI.
+
+    Args:
+        ctx: The Click context.
+        verbose: Whether to enable verbose (debug) logging.
+        **kwargs: Additional session configuration options (profile, region, etc.).
+    """
     setup_logging(verbose)
     ctx.ensure_object(dict)
     ctx.obj.update(kwargs)
 
 
 def main():
+    """Entry point for the botobuddy CLI."""
     try:
         s3.import_commands(cli)
         dynamo.import_commands(cli)

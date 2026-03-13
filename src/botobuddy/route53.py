@@ -7,30 +7,47 @@ from botobuddy.logger import logger
 
 
 def import_commands(parent):
+    """Register Route53 commands with the main CLI group.
+
+    Args:
+        parent (click.Group): The parent CLI group to attach to.
+    """
     parent.add_command(route53_group)
 
 
-@click.group()
+@click.group(name='route53')
 def route53_group():
+    """Route53 operations and management."""
     pass
 
 
-@route53_group.command()
+@route53_group.command(name='export')
 @click.pass_obj
 @click.argument('hosted_zone_id')
 def export_hosted_zone(obj, hosted_zone_id):
-    '''Export all resource record sets from a specified hosted zone'''
+    """Export all resource record sets from a specified hosted zone.
+
+    Args:
+        obj (dict): Global Click configuration object.
+        hosted_zone_id (str): The ID of the Route53 hosted zone to export.
+    """
     client = get_aws_client('route53', obj)
     response = client.list_resource_record_sets(HostedZoneId=hosted_zone_id)  # type: ignore
     click.echo(json.dumps(response['ResourceRecordSets'], indent=2))
 
 
-@route53_group.command()
+@route53_group.command(name='import')
 @click.pass_obj
 @click.option('--filename', '-f', required=True, type=str)
 @click.argument('hosted_zone_id')
 def import_hosted_zone(obj, hosted_zone_id, filename):
-    '''Import resource record sets into a specified hosted zone from a file, skipping NS and SOA records'''
+    """Import resource record sets into a hosted zone, skipping NS and SOA.
+
+    Args:
+        obj (dict): Global Click configuration object.
+        hosted_zone_id (str): The destination hosted zone ID.
+        filename (str): Path to the JSON file containing record sets.
+    """
     client = get_aws_client('route53', obj)
     records = json.loads(Path(filename).read_text())
 

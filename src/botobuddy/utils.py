@@ -1,14 +1,19 @@
 def dslice(d, *keys):
-    '''
-    Slice a dictionary into a new dictionary, using the keys to define the slice.
+    """Slice a dictionary into a new dictionary using specified keys and optional transformations.
 
-    Each key can be a string, or a dictionary with the following keys:
-    - k: the key to slice
-    - c: the cast or conversion function
-    - d: the default value
-    - n: the name of the key in the result dictionary
-    '''
+    Args:
+        d (dict): The source dictionary to slice.
+        *keys: Variable number of key definitions. Each can be:
+            - A string: the key to extract.
+            - A dict with:
+                - 'k': the key to slice from source.
+                - 'c': (optional) a callable to cast or convert the value.
+                - 'd': (optional) a default value if key is missing.
+                - 'n': (optional) the name of the key in the result dictionary.
 
+    Returns:
+        dict: A new dictionary containing the sliced and optionally transformed values.
+    """
     result = {}
 
     for k_def in keys:
