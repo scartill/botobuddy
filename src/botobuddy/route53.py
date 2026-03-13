@@ -13,6 +13,8 @@ def import_commands(parent):
         parent (click.Group): The parent CLI group to attach to.
     """
     parent.add_command(route53_group)
+    # Backward-compatible alias for the previous group name.
+    parent.add_command(route53_group, name='route53-group')
 
 
 @click.group(name='route53')
@@ -34,6 +36,9 @@ def export_hosted_zone(obj, hosted_zone_id):
     client = get_aws_client('route53', obj)
     response = client.list_resource_record_sets(HostedZoneId=hosted_zone_id)  # type: ignore
     click.echo(json.dumps(response['ResourceRecordSets'], indent=2))
+
+# Backward-compatible alias for the previous export command name.
+route53_group.add_command(export_hosted_zone, name='export-hosted-zone')
 
 
 @route53_group.command(name='import')
@@ -63,3 +68,6 @@ def import_hosted_zone(obj, hosted_zone_id, filename):
                 {'Action': 'UPSERT', 'ResourceRecordSet': record}
             ]}
         )
+
+# Backward-compatible alias for the previous import command name.
+route53_group.add_command(import_hosted_zone, name='import-hosted-zone')
