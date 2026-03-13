@@ -26,7 +26,7 @@ dependencies = [
     { name = "python-benedict", extra = ["s3", "toml", "yaml"] },
     { name = "randomname" },
     { name = "rich" },
-    { name = "types-boto3", extra = ["apigateway", "cloudformation", "cognito-idp", "essential", "route53", "sagemaker", "secretsmanager", "sts"] },
+    { name = "types-boto3", extra = ["apigateway", "cloudformation", "cognito-idp", "essential", "lambda", "route53", "sagemaker", "secretsmanager", "ssm", "sts"] },
 ]
 
 [package.dev-dependencies]
@@ -41,7 +41,7 @@ requires-dist = [
     { name = "python-benedict", extras = ["s3", "toml", "yaml"], specifier = ">=0.34.1" },
     { name = "randomname", specifier = ">=0.2.1" },
     { name = "rich", specifier = ">=13.0.0" },
-    { name = "types-boto3", extras = ["essential", "route53", "sts", "sagemaker", "cognito-idp", "cloudformation", "apigateway", "secretsmanager"], specifier = ">=1.38.35" },
+    { name = "types-boto3", extras = ["essential", "route53", "sts", "sagemaker", "cognito-idp", "cloudformation", "apigateway", "secretsmanager", "ssm", "lambda"], specifier = ">=1.38.35" },
 ]
 
 [package.metadata.requires-dev]
@@ -674,6 +674,9 @@ essential = [
     { name = "types-boto3-s3" },
     { name = "types-boto3-sqs" },
 ]
+lambda = [
+    { name = "types-boto3-lambda" },
+]
 route53 = [
     { name = "types-boto3-route53" },
 ]
@@ -682,6 +685,9 @@ sagemaker = [
 ]
 secretsmanager = [
     { name = "types-boto3-secretsmanager" },
+]
+ssm = [
+    { name = "types-boto3-ssm" },
 ]
 sts = [
     { name = "types-boto3-sts" },
@@ -793,6 +799,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/ee/c8/bcdc1b8379652ffc5394fef957e71ff93fa531360e79ff7936ca321c94ed/types_boto3_sqs-1.38.0.tar.gz", hash = "sha256:7713556cb9a7ab6b6b21a0a2a194b9c13fdeeb6082b87f58e2179a601d964082", size = 23370, upload-time = "2025-04-22T21:32:53.739Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/46/a2/fb44e2c9d33875f02545ce7f0cb1d04149845602bfa19607e232e2d6dacb/types_boto3_sqs-1.38.0-py3-none-any.whl", hash = "sha256:3bf05864d2c635ad4ea32554223365b51d945859d2ed87f08aa3f2d09ee08518", size = 33462, upload-time = "2025-04-22T21:32:50.098Z" },
+]
+
+[[package]]
+name = "types-boto3-ssm"
+version = "1.38.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/16/f0/50fa2eddc4fdeb6b68535631d240db8a70476885dc62c44057b9be3cc1c2/types_boto3_ssm-1.38.5.tar.gz", hash = "sha256:fcf9f35189273da5cca254a3d2008d2d0baa163b8bb684a4ca70e820a4352059", size = 94456, upload-time = "2025-04-29T19:42:46.723Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/29/eb/8f27842c8e4c4b1fb668ec46984034c381d146aafcac13b6237744a25eac/types_boto3_ssm-1.38.5-py3-none-any.whl", hash = "sha256:8cfbc9352dba61384c8f6805d42750c7b900f5578c934f06fc43286c31f5b531", size = 95896, upload-time = "2025-04-29T19:42:41.939Z" },
 ]
 
 [[package]]

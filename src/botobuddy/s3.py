@@ -18,7 +18,17 @@ type S3UriCoersible = Any
 
 
 class S3Uri:
+    """A utility class to parse and manipulate S3 URIs."""
+
     def __init__(self, s3_uri: S3UriCoersible):
+        """Initialize S3Uri.
+
+        Args:
+            s3_uri: A string or S3Uri object.
+
+        Raises:
+            ValueError: If s3_uri is not a string or S3Uri object.
+        """
         if isinstance(s3_uri, str):
             pass
         elif isinstance(s3_uri, S3Uri):
@@ -35,6 +45,11 @@ class S3Uri:
         self.key = self.path
 
     def parent(self):
+        """Get the parent S3Uri.
+
+        Returns:
+            S3Uri: The parent URI, or None if no parent exists.
+        """
         if not self.path_list:
             return None
 
@@ -42,9 +57,21 @@ class S3Uri:
         return S3Uri(f's3://{self.bucket}/{parent_path}')
 
     def __str__(self):
+        """Return the string representation of the S3 URI."""
         return self.s3_uri
 
     def __truediv__(self, other):
+        """Join an S3Uri with a path segment.
+
+        Args:
+            other: A string, S3Uri, or Path object.
+
+        Returns:
+            S3Uri: The joined S3 URI.
+
+        Raises:
+            ValueError: If other is not a string, S3Uri, or Path object.
+        """
         if isinstance(other, str):
             other_str = other
         elif isinstance(other, S3Uri):
@@ -58,11 +85,17 @@ class S3Uri:
 
 
 def import_commands(parent):
+    """Register S3 commands with the main CLI group.
+
+    Args:
+        parent (click.Group): The parent CLI group.
+    """
     parent.add_command(s3_group)
 
 
 @click.group(name='s3')
 def s3_group():
+    """S3 operations and management."""
     pass
 
 
@@ -70,7 +103,12 @@ def s3_group():
 @click.argument('bucket_name')
 @click.pass_obj
 def delete_bucket_cmd(obj, bucket_name):
-    '''Clean and delete an S3 bucket completely'''
+    """Clean and delete an S3 bucket completely.
+
+    Args:
+        obj (dict): Global Click configuration object.
+        bucket_name (str): The name of the S3 bucket to delete.
+    """
     try:
         client = get_s3_client(obj)
         delete_bucket_contents(client, bucket_name)
@@ -84,6 +122,12 @@ def delete_bucket_cmd(obj, bucket_name):
 @click.argument('s3_path')
 @click.pass_obj
 def ls_cmd(obj, s3_path):
+    """List objects at the specified S3 path.
+
+    Args:
+        obj (dict): Global Click configuration object.
+        s3_path (str): The S3 path or URI to list.
+    """
     client = get_s3_client(obj)
 
     def print_object(item):
@@ -104,6 +148,14 @@ def ls_cmd(obj, s3_path):
 )
 @click.argument('s3_path')
 def view_dict_cmd(obj, in_format, out_format, s3_path):
+    """View a dictionary-like file from S3 in a specified format.
+
+    Args:
+        obj (dict): Global Click configuration object.
+        in_format (str): Input format of the S3 file.
+        out_format (str): Output format for display.
+        s3_path (str): The S3 path to the file.
+    """
     loaders = {
         'json': benedict.from_json,
         'yaml': benedict.from_yaml,
@@ -165,6 +217,16 @@ def view_dict_cmd(obj, in_format, out_format, s3_path):
 )
 @click.pass_obj
 def sync_cmd(obj, recursive, skip_existing, concurrency, s3_path, local_path):
+    """Sync an S3 folder to a local directory.
+
+    Args:
+        obj (dict): Global Click configuration object.
+        recursive (bool): Whether to sync folders recursively.
+        skip_existing (bool): Whether to skip files that already exist locally.
+        concurrency (int): Number of concurrent downloads.
+        s3_path (str): The source S3 path.
+        local_path (Path): The destination local path.
+    """
     logger.info(f'Syncing {s3_path} to {local_path}')
 
     sync_folder_from_s3(
@@ -177,6 +239,14 @@ def sync_cmd(obj, recursive, skip_existing, concurrency, s3_path, local_path):
 
 
 def json_dumper(d):
+    """Dump a dictionary as a pretty-printed JSON string.
+
+    Args:
+        d (dict): The dictionary to dump.
+
+    Returns:
+        str: The JSON string.
+    """
     return benedict.to_json(d, indent=2)
 
 
@@ -187,7 +257,14 @@ def list_all_objects(
     s3_client: S3Client | None = None,
     session_config: dict = {}
 ):
-    '''List all objects in an S3 bucket and call on_object for each'''
+    """List all objects in an S3 bucket and call on_object for each.
+
+    Args:
+        s3_path: The S3 path or S3Uri to list.
+        on_object: A callback function called with each object dictionary.
+        s3_client: Optional S3 client.
+        session_config: Optional AWS session configuration.
+    """
     if isinstance(s3_path, str):
         s3_uri = S3Uri(s3_path)
     else:
@@ -208,9 +285,12 @@ def list_all_objects(
 
 
 def delete_bucket_contents(client, bucket_name):
-    '''
-    Deletes all objects and object versions from the specified S3 bucket
-    '''
+    """Deletes all objects and object versions from the specified S3 bucket.
+
+    Args:
+        client (S3Client): The S3 client to use.
+        bucket_name (str): The name of the bucket to empty.
+    """
     logger.debug(f'Deleting all objects in bucket: {bucket_name}')
 
     # Delete all objects and their versions
@@ -246,9 +326,12 @@ def delete_bucket_contents(client, bucket_name):
 
 
 def delete_bucket(client, bucket_name):
-    '''
-    Deletes the specified S3 bucket after emptying it
-    '''
+    """Deletes the specified S3 bucket after emptying it.
+
+    Args:
+        client (S3Client): The S3 client to use.
+        bucket_name (str): The name of the bucket to delete.
+    """
 
     # Delete the bucket
     logger.debug(f'Deleting bucket: {bucket_name}')

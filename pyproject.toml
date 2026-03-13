@@ -14,15 +14,19 @@ dependencies = [
     "python-benedict[s3,toml,yaml]>=0.34.1",
     "randomname>=0.2.1",
     "rich>=13.0.0",
-    "types-boto3[essential,route53,sts,sagemaker,cognito-idp,cloudformation,apigateway,secretsmanager]>=1.38.35",
+    "types-boto3[essential,route53,sts,sagemaker,cognito-idp,cloudformation,apigateway,secretsmanager,ssm,lambda]>=1.38.35",
 ]
 
 [project.urls]
 Homepage = "https://github.com/scartill/botobuddy"
 Changelog = "https://github.com/scartill/botobuddy/blob/main/CHANGELOG.md"
 
-[tool.uv]
-package = true
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/botobuddy"]
 
 [project.scripts]
 botobuddy = "botobuddy.cli:main"
@@ -31,3 +35,9 @@ botobuddy = "botobuddy.cli:main"
 dev = [
     "twine>=6.1.0",
 ]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "single"
