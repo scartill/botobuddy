@@ -145,7 +145,7 @@ def get_s3_client(session_config={}, core_config: dict | None = None) -> S3Clien
     return cast(S3Client, get_aws_client('s3', session_config, core_config=core_config))
 
 
-def get_dynamodb_client(session_config={}) -> DynamoDBClient:
+def get_dynamodb_client(session_config: dict | None = None) -> DynamoDBClient:
     """Get a DynamoDB client.
 
     Args:
@@ -154,10 +154,12 @@ def get_dynamodb_client(session_config={}) -> DynamoDBClient:
     Returns:
         DynamoDBClient: A Boto3 DynamoDB client.
     """
+    if session_config is None:
+        session_config = {}
     return cast(DynamoDBClient, get_aws_client('dynamodb', session_config))
 
 
-def get_route53_client(session_config={}) -> Route53Client:
+def get_route53_client(session_config: dict | None = None) -> Route53Client:
     """Get a Route53 client.
 
     Args:
@@ -166,10 +168,12 @@ def get_route53_client(session_config={}) -> Route53Client:
     Returns:
         Route53Client: A Boto3 Route53 client.
     """
+    if session_config is None:
+        session_config = {}
     return cast(Route53Client, get_aws_client('route53', session_config))
 
 
-def get_sagemaker_client(session_config={}) -> SageMakerClient:
+def get_sagemaker_client(session_config: dict | None = None) -> SageMakerClient:
     """Get a SageMaker client.
 
     Args:
@@ -178,10 +182,12 @@ def get_sagemaker_client(session_config={}) -> SageMakerClient:
     Returns:
         SageMakerClient: A Boto3 SageMaker client.
     """
+    if session_config is None:
+        session_config = {}
     return cast(SageMakerClient, get_aws_client('sagemaker', session_config))
 
 
-def get_cognito_client(session_config={}) -> CognitoIdentityProviderClient:
+def get_cognito_client(session_config: dict | None = None) -> CognitoIdentityProviderClient:
     """Get a Cognito Identity Provider client.
 
     Args:
@@ -190,10 +196,12 @@ def get_cognito_client(session_config={}) -> CognitoIdentityProviderClient:
     Returns:
         CognitoIdentityProviderClient: A Boto3 Cognito client.
     """
+    if session_config is None:
+        session_config = {}
     return cast(CognitoIdentityProviderClient, get_aws_client('cognito-idp', session_config))
 
 
-def get_cloudformation_client(session_config={}) -> CloudFormationClient:
+def get_cloudformation_client(session_config: dict | None = None) -> CloudFormationClient:
     """Get a CloudFormation client.
 
     Args:
@@ -202,10 +210,12 @@ def get_cloudformation_client(session_config={}) -> CloudFormationClient:
     Returns:
         CloudFormationClient: A Boto3 CloudFormation client.
     """
+    if session_config is None:
+        session_config = {}
     return cast(CloudFormationClient, get_aws_client('cloudformation', session_config))
 
 
-def get_apigateway_client(session_config={}) -> APIGatewayClient:
+def get_apigateway_client(session_config: dict | None = None) -> APIGatewayClient:
     """Get an API Gateway client.
 
     Args:
@@ -214,10 +224,12 @@ def get_apigateway_client(session_config={}) -> APIGatewayClient:
     Returns:
         APIGatewayClient: A Boto3 API Gateway client.
     """
+    if session_config is None:
+        session_config = {}
     return cast(APIGatewayClient, get_aws_client('apigateway', session_config))
 
 
-def get_secretsmanager_client(session_config={}) -> SecretsManagerClient:
+def get_secretsmanager_client(session_config: dict | None = None) -> SecretsManagerClient:
     """Get a Secrets Manager client.
 
     Args:
@@ -226,10 +238,12 @@ def get_secretsmanager_client(session_config={}) -> SecretsManagerClient:
     Returns:
         SecretsManagerClient: A Boto3 Secrets Manager client.
     """
+    if session_config is None:
+        session_config = {}
     return cast(SecretsManagerClient, get_aws_client('secretsmanager', session_config))
 
 
-def get_ssm_client(session_config={}) -> SSMClient:
+def get_ssm_client(session_config: dict | None = None) -> SSMClient:
     """Get an SSM client.
 
     Args:
@@ -238,10 +252,12 @@ def get_ssm_client(session_config={}) -> SSMClient:
     Returns:
         SSMClient: A Boto3 SSM client.
     """
+    if session_config is None:
+        session_config = {}
     return cast(SSMClient, get_aws_client('ssm', session_config))
 
 
-def get_lambda_client(session_config={}) -> LambdaClient:
+def get_lambda_client(session_config: dict | None = None) -> LambdaClient:
     """Get a Lambda client.
 
     Args:
@@ -250,11 +266,13 @@ def get_lambda_client(session_config={}) -> LambdaClient:
     Returns:
         LambdaClient: A Boto3 Lambda client.
     """
+    if session_config is None:
+        session_config = {}
     return cast(LambdaClient, get_aws_client('lambda', session_config))
 
 
 # Resource factories
-def get_dynamodb_resource(session_config={}) -> DynamoDBServiceResource:
+def get_dynamodb_resource(session_config: dict | None = None) -> DynamoDBServiceResource:
     """Get a DynamoDB resource.
 
     Args:
@@ -263,6 +281,8 @@ def get_dynamodb_resource(session_config={}) -> DynamoDBServiceResource:
     Returns:
         DynamoDBServiceResource: A Boto3 DynamoDB resource.
     """
+    if session_config is None:
+        session_config = {}
     return cast(
         DynamoDBServiceResource,
         get_aws_client('dynamodb', session_config, resource=True),
