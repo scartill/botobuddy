@@ -3,7 +3,7 @@ from typing import Optional
 from botobuddy.common import get_ssm_client, SSMClient
 
 
-def get_ssm_parameter(name, session_config={}, ssm_client: Optional[SSMClient] = None):
+def get_ssm_parameter(name, session_config: dict | None = None, ssm_client: Optional[SSMClient] = None):
     """Retrieve a parameter value from AWS SSM Parameter Store.
 
     Args:
@@ -15,6 +15,7 @@ def get_ssm_parameter(name, session_config={}, ssm_client: Optional[SSMClient] =
     Returns:
         str: The value of the SSM parameter.
     """
+    session_config = session_config or {}
     ssm = ssm_client or get_ssm_client(session_config)
     value = ssm.get_parameter(Name=name)['Parameter']['Value']
     return value
