@@ -107,7 +107,7 @@ def get_this_url(event):
     return f'https://{domainName}{path}'
 
 
-def get_function_url(function_name, session_config={}):
+def get_function_url(function_name, session_config=None):
     """Get the configured URL for a Lambda function.
 
     Args:
@@ -120,6 +120,9 @@ def get_function_url(function_name, session_config={}):
     Raises:
         ValueError: If the function URL configuration is not found.
     """
+    if session_config is None:
+        session_config = {}
+
     client = get_lambda_client(session_config)
     try:
         response = client.get_function_url_config(FunctionName=function_name)
