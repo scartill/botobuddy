@@ -15,13 +15,12 @@ def get_api_uri(api_name: str, session_config: dict = {}) -> str:
         ValueError: If no API with the given name is found.
     """
     client = get_apigateway_client(session_config)
+    paginator = client.get_paginator('get_rest_apis')
 
-    for api in client.get_rest_apis()['items']:
-        if api['name'] != f'{api_name}':
-            continue
-
-        region = api['tags']['aws:cloudformation:stack-id'].split(':')[3]
-
-        return f'https://{api['id']}.execute-api.{region}.amazonaws.com/{api['name']}'
+    for page in paginator.paginate():
+        for api in page.get('items', []):
+            if api['name'] == api_name:
+                region = client.meta.region_name
+                return f"https://{api['id']}.execute-api.{region}.amazonaws.com/{api['name']}"
 
     raise ValueError('No API found')
