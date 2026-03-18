@@ -71,7 +71,11 @@ def get_aws_session(session_config: dict = {}) -> boto3.Session:
         assumed_role_object = sts_client.assume_role(RoleArn=assume_role, RoleSessionName=session_name)
 
         logger.info(f'Assumed role {assume_role} with session name {session_name}')
-        logger.debug(f'Assumed role object: {assumed_role_object}')
+
+        # Log only the assumed role user details to avoid exposing sensitive credentials in debug logs
+        assumed_role_user = assumed_role_object.get('AssumedRoleUser', {})
+        logger.debug(f'Assumed role user: {assumed_role_user}')
+
         credentials = assumed_role_object['Credentials']
 
         assume_params = {
