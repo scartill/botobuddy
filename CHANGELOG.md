@@ -14,7 +14,8 @@
 
 # 0.5.2
 
-- Security-related bugfixes
+- Security-related bugfixes (fixed path traversal in S3 object downloads)
+- Removed redundant `list_objects_v2` loop in S3 bucket deletion
 
 # 0.5.1
 
@@ -71,13 +72,28 @@
 
 - Fixed fast download concurrency issue
 - Added support for default session config values
+- Increased S3 download concurrency from 10 to 100 in SageMaker
+- Corrected core configuration handling
 
 # 0.3.0
 
-- Add `botobuddy.s3.S3Uri` class
-- Add `botobuddy.utils.dslice` function
-- Add `botobuddy.sagemaker.analyse_human_effort` function
+- Added `botobuddy.s3.S3Uri` class
+- Added `botobuddy.utils.dslice` utility function
+- Improved error handling and status checks for SageMaker labeling jobs
 
 # 0.2.0
 
-- Some interface refactoring
+- Added project URL links to `pyproject.toml`
+- Renamed session configuration parameters for better clarity
+- Enhanced task progress tracking and decreased S3 download verbosity
+
+# 0.1.0
+
+- Initial release
+- Added Route 53 resource record sets management
+- Added DynamoDB table truncation support
+- Added SageMaker human effort analysis command
+- Added S3 fast download utility for parallel file downloads
+- Added AWS role assumption support
+- Added support for botocore session configuration
+- Initial project configuration using `uv`
