@@ -96,7 +96,7 @@ def request_params(event):
 
         try:
             params.update(json.loads(event['body']))
-        except json.JSONDecodeError as e:
+        except (json.JSONDecodeError, TypeError) as e:
             raise UserWarning('Invalid JSON payload in request body') from e
 
     return (method, params)
