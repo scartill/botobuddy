@@ -48,7 +48,8 @@ def response(data_or_error=None, rc=200, cors_origin='*'):
             'X-Frame-Options': 'DENY',
             'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
             'Content-Security-Policy': "default-src 'none'",
-            'Cache-Control': 'no-store'
+            'Cache-Control': 'no-store',
+            'Content-Type': 'application/json; charset=utf-8',
         },
         'body': json.dumps(payload, cls=DynamoFriendlyEncoder),
     }
