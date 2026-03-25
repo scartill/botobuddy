@@ -19,13 +19,14 @@ class DynamoFriendlyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def response(data_or_error=None, rc=200, cors_origin='*'):
+def response(data_or_error=None, rc=200, cors_origin='*', additional_headers=None):
     """Returns a standardized response object for AWS Lambda with security headers.
 
     Args:
         data_or_error: The data to return in the response body or error message.
         rc: The HTTP status code to return. Defaults to 200.
         cors_origin: The allowed CORS origin. Defaults to '*' but should be restricted in production.
+        additional_headers: Optional dictionary of additional headers or overrides for default headers.
 
     Returns:
         A dictionary containing statusCode, headers, and body formatted for API Gateway.
@@ -38,19 +39,23 @@ def response(data_or_error=None, rc=200, cors_origin='*'):
         if data_or_error:
             payload.update(data_or_error)
 
+    headers = {
+        'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token',
+        'Access-Control-Allow-Origin': cors_origin,
+        'Access-Control-Allow-Methods': 'OPTIONS,GET,POST,PUT,DELETE',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+        'Content-Security-Policy': "default-src 'none'",
+        'Cache-Control': 'no-store'
+    }
+
+    if additional_headers:
+        headers.update(additional_headers)
+
     return {
         'statusCode': rc,
-        'headers': {
-            'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token',
-            'Access-Control-Allow-Origin': cors_origin,
-            'Access-Control-Allow-Methods': 'OPTIONS,GET,POST,PUT,DELETE',
-            'X-Content-Type-Options': 'nosniff',
-            'X-Frame-Options': 'DENY',
-            'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-            'Content-Security-Policy': "default-src 'none'",
-            'Cache-Control': 'no-store',
-            'Content-Type': 'application/json; charset=utf-8',
-        },
+        'headers': headers,
         'body': json.dumps(payload, cls=DynamoFriendlyEncoder),
     }
 
@@ -96,7 +101,7 @@ def request_params(event):
 
         try:
             params.update(json.loads(event['body']))
-        except (json.JSONDecodeError, TypeError) as e:
+        except json.JSONDecodeError as e:
             raise UserWarning('Invalid JSON payload in request body') from e
 
     return (method, params)
