@@ -19,12 +19,14 @@ class DynamoFriendlyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def response(data_or_error=None, rc=200):
-    """Returns a standardized response object for AWS Lambda.
+def response(data_or_error=None, rc=200, cors_origin='*', additional_headers=None):
+    """Returns a standardized response object for AWS Lambda with security headers.
 
     Args:
         data_or_error: The data to return in the response body or error message.
         rc: The HTTP status code to return. Defaults to 200.
+        cors_origin: The allowed CORS origin. Defaults to '*' but should be restricted in production.
+        additional_headers: Optional dictionary of additional headers or overrides for default headers.
 
     Returns:
         A dictionary containing statusCode, headers, and body formatted for API Gateway.
@@ -37,13 +39,23 @@ def response(data_or_error=None, rc=200):
         if data_or_error:
             payload.update(data_or_error)
 
+    headers = {
+        'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token',
+        'Access-Control-Allow-Origin': cors_origin,
+        'Access-Control-Allow-Methods': 'OPTIONS,GET,POST,PUT,DELETE',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+        'Content-Security-Policy': "default-src 'none'",
+        'Cache-Control': 'no-store'
+    }
+
+    if additional_headers:
+        headers.update(additional_headers)
+
     return {
         'statusCode': rc,
-        'headers': {
-            'Access-Control-Allow-Headers': '*',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'OPTIONS,GET,POST,PUT,DELETE',
-        },
+        'headers': headers,
         'body': json.dumps(payload, cls=DynamoFriendlyEncoder),
     }
 
@@ -84,10 +96,13 @@ def request_params(event):
         params.update(qsParams)
 
     if method == 'POST' or method == 'PUT':
-        if 'body' not in event:
+        if 'body' not in event or not event['body']:
             raise UserWarning('A request body must be present for POST and PUT requests')
 
-        params.update(json.loads(event['body']))
+        try:
+            params.update(json.loads(event['body']))
+        except json.JSONDecodeError as e:
+            raise UserWarning('Invalid JSON payload in request body') from e
 
     return (method, params)
 
