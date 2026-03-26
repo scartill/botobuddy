@@ -1,3 +1,4 @@
+# Note to agents: this function is used elsewhere, do not remove it
 def dslice(d, *keys):
     """Slice a dictionary into a new dictionary using specified keys and optional transformations.
 
