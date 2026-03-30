@@ -9,9 +9,28 @@ from rich.progress import track
 from rich.spinner import Spinner
 from rich.live import Live
 
+from typing import cast
+from types_boto3_sagemaker import SageMakerClient
+
 from botobuddy.logger import logger
-from botobuddy.common import get_sagemaker_client, get_cognito_client, get_s3_client
-from botobuddy.s3 import fast_download_s3_files, S3Uri
+from botobuddy.common import get_aws_client
+from botobuddy.s3 import fast_download_s3_files, S3Uri, get_s3_client
+from botobuddy.cognito import get_cognito_client
+
+
+def get_sagemaker_client(session_config: dict | None = None, profile: str | None = None) -> SageMakerClient:
+    """Get a SageMaker client.
+
+    Args:
+        session_config (dict): Optional AWS session configuration.
+        profile: Explicit AWS profile name. Takes precedence over session_config['profile'].
+
+    Returns:
+        SageMakerClient: A Boto3 SageMaker client.
+    """
+    if session_config is None:
+        session_config = {}
+    return cast(SageMakerClient, get_aws_client('sagemaker', session_config, profile=profile))
 
 
 def import_commands(parent):
@@ -73,13 +92,14 @@ def analyse_human_effort_command(obj, job_name, output_json, data_dir):
         rich.print(table)
 
 
-def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict = {}):
+def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict | None = None, profile: str | None = None):
     '''Analyse human effort for the labelling job.
 
     Args:
         job_name: Name of the labelling job
         data_dir: Path to the dataset directory
         session_config: Configuration for the AWS session (profile, region, etc.)
+        profile: Explicit AWS profile name. Takes precedence over session_config['profile'].
 
     Returns:
         dict: A dictionary with the worker data:
@@ -91,9 +111,11 @@ def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict = {
             }
         }
     '''
+    if session_config is None:
+        session_config = {}
 
-    s3 = get_s3_client(session_config)
-    sagemaker = get_sagemaker_client(session_config)
+    s3 = get_s3_client(session_config, profile=profile)
+    sagemaker = get_sagemaker_client(session_config, profile=profile)
 
     try:
         response = sagemaker.describe_labeling_job(LabelingJobName=job_name)
@@ -137,7 +159,8 @@ def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict = {
             fast_download_s3_files(
                 targets=targets,
                 skip_existing=True,
-                session_config=session_config
+                session_config=session_config,
+                profile=profile
             )
 
         annotations = Counter()
@@ -156,7 +179,7 @@ def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict = {
         workforce = sagemaker.describe_workforce(WorkforceName='default')
         user_pool_id = workforce['Workforce']['CognitoConfig']['UserPool']  # type: ignore
         logger.info(f'Using Cognito user pool ID: {user_pool_id}')
-        sub_to_email_mapping = get_sub_to_email_mapping(user_pool_id, session_config)
+        sub_to_email_mapping = get_sub_to_email_mapping(user_pool_id, session_config, profile=profile)
 
         def worker_id_to_email(worker_id):
             if worker_id not in cognito_user_ids:
@@ -185,7 +208,7 @@ def analyse_human_effort(job_name: str, data_dir: Path, session_config: dict = {
         raise UserWarning(f'Failed to analyse human effort for job {job_name}: {e}') from e
 
 
-def get_sub_to_email_mapping(user_pool_id: str, session_config: dict = {}):
+def get_sub_to_email_mapping(user_pool_id: str, session_config: dict | None = None, profile: str | None = None):
     '''Generates a mapping from 'sub' (UUID) to email address for all users
     in a given AWS Cognito User Pool.
 
@@ -196,13 +219,16 @@ def get_sub_to_email_mapping(user_pool_id: str, session_config: dict = {}):
     Args:
         user_pool_id (str): The ID of your Cognito User Pool.
         session_config: Configuration for the AWS session (profile, region, etc.)
+        profile: Explicit AWS profile name. Takes precedence over session_config['profile'].
 
     Returns:
         dict: A dictionary where keys are 'sub' (UUIDs) and values are email addresses.
               Returns an empty dictionary if no users are found or on error.
     '''
+    if session_config is None:
+        session_config = {}
 
-    client = get_cognito_client(session_config)
+    client = get_cognito_client(session_config, profile=profile)
     sub_email_map = {}
 
     try:

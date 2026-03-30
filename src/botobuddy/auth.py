@@ -1,7 +1,26 @@
 import json
 import click
 
-from botobuddy.common import get_sts_client
+from typing import cast
+from types_boto3_sts import STSClient
+
+from botobuddy.common import get_aws_client
+
+
+def get_sts_client(session_config: dict | None = None, profile: str | None = None) -> STSClient:
+    """Get an STS client.
+
+    Args:
+        session_config (dict): Optional AWS session configuration.
+        profile: Explicit AWS profile name. Takes precedence over session_config['profile'].
+
+    Returns:
+        STSClient: A Boto3 STS client.
+    """
+    if session_config is None:
+        session_config = {}
+
+    return cast(STSClient, get_aws_client('sts', session_config, profile=profile))
 
 
 def import_commands(parent):

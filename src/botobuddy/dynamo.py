@@ -1,7 +1,43 @@
 import click
 
-from botobuddy.common import get_dynamodb_resource, DynamoDBServiceResource
+from typing import cast
+from types_boto3_dynamodb import DynamoDBClient, DynamoDBServiceResource
+
+from botobuddy.common import get_aws_client
 from botobuddy.logger import logger
+
+
+def get_dynamodb_client(session_config: dict | None = None, profile: str | None = None) -> DynamoDBClient:
+    """Get a DynamoDB client.
+
+    Args:
+        session_config (dict): Optional AWS session configuration.
+        profile: Explicit AWS profile name. Takes precedence over session_config['profile'].
+
+    Returns:
+        DynamoDBClient: A Boto3 DynamoDB client.
+    """
+    if session_config is None:
+        session_config = {}
+    return cast(DynamoDBClient, get_aws_client('dynamodb', session_config, profile=profile))
+
+
+def get_dynamodb_resource(session_config: dict | None = None, profile: str | None = None) -> DynamoDBServiceResource:
+    """Get a DynamoDB resource.
+
+    Args:
+        session_config (dict): Optional AWS session configuration.
+        profile: Explicit AWS profile name. Takes precedence over session_config['profile'].
+
+    Returns:
+        DynamoDBServiceResource: A Boto3 DynamoDB resource.
+    """
+    if session_config is None:
+        session_config = {}
+    return cast(
+        DynamoDBServiceResource,
+        get_aws_client('dynamodb', session_config, profile=profile, resource=True),
+    )
 
 
 def import_commands(parent):

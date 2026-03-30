@@ -38,7 +38,7 @@ The project uses `uv` for development and package management.
 ## Development Conventions
 
 - **Modular Commands**: CLI commands are grouped by service. Each service module should implement an `import_commands(parent)` function to register its commands with the main CLI group.
-- **AWS Session Handling**: Always use the factory functions in `botobuddy.common` (`get_s3_client`, `get_dynamodb_resource`, etc.) to ensure global CLI options like `--profile` or `--assume-role` are respected.
+- **AWS Session Handling**: Use service-specific factory functions (e.g., `botobuddy.s3.get_s3_client`, `botobuddy.dynamo.get_dynamodb_resource`) to ensure global CLI options like `--profile` or `--assume-role` are respected. Generic `get_aws_client` is available in `botobuddy.common`.
 - **Type Safety**: Use `types-boto3` for all AWS client/resource interactions.
 - **Logging**: Use `botobuddy.logger.logger` for all output. Avoid `print()` unless it's a direct command output intended for piping.
 - **Error Handling**: Prefer raising `UserWarning` or descriptive exceptions that the main `cli.py` can catch and log appropriately. Use `--traceback` for debugging.
