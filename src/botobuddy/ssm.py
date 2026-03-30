@@ -1,5 +1,3 @@
-from typing import Optional
-
 from typing import cast, Optional
 from types_boto3_ssm import SSMClient
 

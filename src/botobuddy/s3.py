@@ -1,6 +1,6 @@
 import os
 import tempfile
-from typing import Callable, Any
+from typing import Callable, Any, cast
 from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path

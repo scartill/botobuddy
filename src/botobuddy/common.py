@@ -26,7 +26,6 @@ def get_aws_session(session_config: dict | None = None, profile: str | None = No
 
     profile = profile or session_config.get('profile')
     region = session_config.get('region')
-    region = session_config.get('region')
 
     params = {}
 

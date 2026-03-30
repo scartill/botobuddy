@@ -1,6 +1,4 @@
-from typing import Optional
 import json
-
 from typing import cast, Optional
 from types_boto3_secretsmanager import SecretsManagerClient
 
