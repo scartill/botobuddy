@@ -1,7 +1,25 @@
 import json
 from decimal import Decimal
 
-from botobuddy.common import get_lambda_client
+from typing import cast
+from types_boto3_lambda import LambdaClient
+
+from botobuddy.common import get_aws_client
+
+
+def get_lambda_client(session_config: dict | None = None, profile: str | None = None) -> LambdaClient:
+    """Get a Lambda client.
+
+    Args:
+        session_config (dict): Optional AWS session configuration.
+        profile: Explicit AWS profile name. Takes precedence over session_config['profile'].
+
+    Returns:
+        LambdaClient: A Boto3 Lambda client.
+    """
+    if session_config is None:
+        session_config = {}
+    return cast(LambdaClient, get_aws_client('lambda', session_config, profile=profile))
 
 
 class DynamoFriendlyEncoder(json.JSONEncoder):
@@ -122,12 +140,13 @@ def get_this_url(event):
     return f'https://{domainName}{path}'
 
 
-def get_function_url(function_name, session_config=None):
+def get_function_url(function_name, session_config=None, profile: str | None = None):
     """Get the configured URL for a Lambda function.
 
     Args:
         function_name: Name of the Lambda function.
         session_config: Configuration for the AWS session.
+        profile: Explicit AWS profile name. Takes precedence over session_config['profile'].
 
     Returns:
         The Function URL.
@@ -138,7 +157,7 @@ def get_function_url(function_name, session_config=None):
     if session_config is None:
         session_config = {}
 
-    client = get_lambda_client(session_config)
+    client = get_lambda_client(session_config, profile=profile)
     try:
         response = client.get_function_url_config(FunctionName=function_name)
 

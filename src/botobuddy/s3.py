@@ -10,8 +10,25 @@ from benedict import benedict
 from boto3.s3.transfer import TransferConfig
 from types_boto3_s3 import S3Client
 
-from botobuddy.common import get_s3_client
+from botobuddy.common import get_aws_client
 from botobuddy.logger import logger
+
+
+def get_s3_client(session_config: dict | None = None, profile: str | None = None, core_config: dict | None = None) -> S3Client:
+    """Get an S3 client.
+
+    Args:
+        session_config (dict): Optional AWS session configuration.
+        profile: Explicit AWS profile name. Takes precedence over session_config['profile'].
+        core_config (dict): Optional botocore configuration.
+
+    Returns:
+        S3Client: A Boto3 S3 client.
+    """
+    if session_config is None:
+        session_config = {}
+
+    return cast(S3Client, get_aws_client('s3', session_config, profile=profile, core_config=core_config))
 
 
 type S3UriCoersible = Any
@@ -255,7 +272,8 @@ def list_all_objects(
     on_object: Callable[[dict], None],
     *,
     s3_client: S3Client | None = None,
-    session_config: dict = {}
+    session_config: dict | None = None,
+    profile: str | None = None
 ):
     """List all objects in an S3 bucket and call on_object for each.
 
@@ -264,13 +282,17 @@ def list_all_objects(
         on_object: A callback function called with each object dictionary.
         s3_client: Optional S3 client.
         session_config: Optional AWS session configuration.
+        profile: Explicit AWS profile name. Takes precedence over session_config['profile'].
     """
+    if session_config is None:
+        session_config = {}
+
     if isinstance(s3_path, str):
         s3_uri = S3Uri(s3_path)
     else:
         s3_uri = s3_path
 
-    client = s3_client or get_s3_client(session_config=session_config)
+    client = s3_client or get_s3_client(session_config=session_config, profile=profile)
 
     paginator = client.get_paginator('list_objects_v2')
     page_iterator = paginator.paginate(
@@ -345,7 +367,8 @@ def fast_download_s3_files(
     skip_existing: bool = False,
     create_folders: bool = True,
     concurrency: int = 10,
-    session_config: dict = {}
+    session_config: dict | None = None,
+    profile: str | None = None
 ):
     '''Download a list of files from S3 in parallel.
 
@@ -355,14 +378,16 @@ def fast_download_s3_files(
         create_folders: Create the folders for the files
         concurrency: Number of concurrent downloads
         session_config: Configuration for the AWS session (profile, region, etc.)
-        s3_client: S3 client to use for the download (None uses the default client)
+        profile: Explicit AWS profile name. Takes precedence over session_config['profile'].
     '''
+    if session_config is None:
+        session_config = {}
 
     boto_config = {
         'max_pool_connections': int(1.5 * concurrency)
     }
 
-    client = get_s3_client(session_config, core_config=boto_config)
+    client = get_s3_client(session_config, profile=profile, core_config=boto_config)
     transfer_config = TransferConfig(use_threads=False)
 
     logger.debug(f'Fast downloading {len(targets)} files')
@@ -408,7 +433,8 @@ def sync_folder_from_s3(
     s3_uri: str | S3Uri,
     local_dir: Path,
     *,
-    session_config={},
+    session_config: dict | None = None,
+    profile: str | None = None,
     recursive: bool = False,
     skip_existing: bool = True,
     concurrency: int = 10
@@ -418,13 +444,16 @@ def sync_folder_from_s3(
     Args:
         s3_uri: S3 URI to the folder
         local_dir: Local directory to save the folder
-        s3_client: S3 client to use for the download (None uses the default client)
+        session_config: Configuration for the AWS session.
+        profile: Explicit AWS profile name. Takes precedence over session_config['profile'].
         recursive: Recursively download the folder
         concurrency: Number of concurrent downloads
 
     Note: This function always preserves the folder structure in the local directory,
         including filenames.
     '''
+    if session_config is None:
+        session_config = {}
 
     if isinstance(s3_uri, str):
         s3_uri = S3Uri(s3_uri)
@@ -449,8 +478,8 @@ def sync_folder_from_s3(
 
         targets.append((s3_uri.bucket, key, local_path))
 
-    s3_client = get_s3_client(session_config)
-    list_all_objects(s3_uri, on_object, s3_client=s3_client)
+    s3_client = get_s3_client(session_config, profile=profile)
+    list_all_objects(s3_uri, on_object, s3_client=s3_client, profile=profile)
 
     if not targets:
         logger.debug(f'No files found in {s3_uri}')
