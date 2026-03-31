@@ -117,6 +117,10 @@ def request_params(event):
         if 'body' not in event or not event['body']:
             raise UserWarning('A request body must be present for POST and PUT requests')
 
+        # SECURITY: Limit request body length to 5MB to prevent DoS attacks via memory exhaustion
+        if len(event['body']) > 5 * 1024 * 1024:
+            raise UserWarning('Request body exceeds maximum allowed size (5MB)')
+
         try:
             params.update(json.loads(event['body']))
         except json.JSONDecodeError as e:
