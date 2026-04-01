@@ -1,6 +1,5 @@
 import sys
 import traceback
-from argparse import ArgumentParser
 from importlib.metadata import version
 
 import click
@@ -51,11 +50,7 @@ def main():
         sys.exit(1)
 
     except Exception as e:
-        parser = ArgumentParser()
-        parser.add_argument('--traceback', action='store_true')
-        args, _ = parser.parse_known_args()
-
-        if args.traceback:  # type: ignore
+        if '--traceback' in sys.argv:
             traceback.print_exc()
 
         logger.error(e)
