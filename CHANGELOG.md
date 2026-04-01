@@ -1,3 +1,12 @@
+# 0.7.1
+
+- Sentinel security fix: Added input length limit to request body
+
+# 0.7.0
+
+- Major refactoring of AWS client factories
+- Enhanced CLI options for region and profile selection
+
 # 0.6.0
 
 - Added SSM Parameter Store client and `get_ssm_parameter` utility
