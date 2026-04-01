@@ -117,8 +117,32 @@ def request_params(event):
         if 'body' not in event or not event['body']:
             raise UserWarning('A request body must be present for POST and PUT requests')
 
+        body = event['body']
+
+        # Normalize body to bytes for size checking
+        if isinstance(body, str):
+            body_bytes = body.encode('utf-8')
+        elif isinstance(body, bytes):
+            body_bytes = body
+        else:
+            raise UserWarning('Unexpected request body type; expected text or bytes')
+
+        # SECURITY: Limit request body length to 5MB (in bytes) to prevent DoS via memory exhaustion
+        if len(body_bytes) > 5 * 1024 * 1024:
+            raise UserWarning('Request body exceeds maximum allowed size (5MB)')
+
         try:
-            params.update(json.loads(event['body']))
+            # Decode as UTF-8 text for JSON parsing
+            if isinstance(body, bytes):
+                body_text = body_bytes.decode('utf-8')
+            else:
+                # body was str; reuse it to avoid double-decoding
+                body_text = body
+        except UnicodeDecodeError as e:
+            raise UserWarning('Invalid encoding in request body; expected UTF-8 text') from e
+
+        try:
+            params.update(json.loads(body_text))
         except json.JSONDecodeError as e:
             raise UserWarning('Invalid JSON payload in request body') from e
 
