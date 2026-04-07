@@ -7,3 +7,7 @@
 **Vulnerability:** The entire `assumed_role_object` returned by `sts.assume_role` was being logged at the `DEBUG` level. This object contains temporary AWS credentials (`AccessKeyId`, `SecretAccessKey`, `SessionToken`) in plain text.
 **Learning:** Even debug logs can leak critical secrets if whole response objects from identity or authentication services are dumped indiscriminately.
 **Prevention:** Always selectively log safe, non-sensitive attributes (like `AssumedRoleUser` details) from authentication/authorization responses instead of logging the entire payload.
+## 2024-10-24 - Default Ciphertext Exposure in AWS SSM Parameter Store Wrappers
+**Vulnerability:** AWS Systems Manager Parameter Store `get_parameter` API silently returns KMS-encrypted ciphertext for `SecureString` types unless `WithDecryption=True` is explicitly passed. When wrapper libraries omit this flag, they can inadvertently expose encrypted secrets to logs or components expecting plaintext, which might mistakenly process or serialize them.
+**Learning:** Default behavior of cloud SDK APIs might favor operational continuity (e.g. returning ciphertext without KMS read permissions) over strict security by default (fail-secure). Wrappers around secrets fetching must enforce decryption to avoid silently degrading to ciphertext.
+**Prevention:** Always default `WithDecryption=True` when building wrappers around SSM `get_parameter`. Expose it as an optional override rather than forcing the caller to remember it.
