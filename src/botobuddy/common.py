@@ -1,6 +1,5 @@
 from typing import Any
 
-import randomname
 import boto3
 from botocore.config import Config
 
@@ -41,7 +40,7 @@ def get_aws_session(session_config: dict | None = None, profile: str | None = No
     session = boto3.Session(**params)
 
     if assume_role := session_config.get('assume_role'):
-        session_name = randomname.get_name()
+        session_name = session_config.get('session_name', 'botobuddy-session')
         sts_client = session.client('sts')
 
         assumed_role_object = sts_client.assume_role(RoleArn=assume_role, RoleSessionName=session_name)
