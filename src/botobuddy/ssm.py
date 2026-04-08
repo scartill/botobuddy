@@ -19,7 +19,7 @@ def get_ssm_client(session_config: dict | None = None, profile: str | None = Non
     return cast(SSMClient, get_aws_client('ssm', session_config, profile=profile))
 
 
-def get_ssm_parameter(name, session_config: dict | None = None, profile: str | None = None, ssm_client: Optional[SSMClient] = None):
+def get_ssm_parameter(name, session_config: dict | None = None, profile: str | None = None, ssm_client: Optional[SSMClient] = None, *, with_decryption: bool = True):
     """Retrieve a parameter value from AWS SSM Parameter Store.
 
     Args:
@@ -28,6 +28,8 @@ def get_ssm_parameter(name, session_config: dict | None = None, profile: str | N
         profile: Explicit AWS profile name. Takes precedence over session_config['profile'].
         ssm_client (Optional[SSMClient]): An existing SSM client to use.
             If not provided, a new one will be created.
+        with_decryption (bool): If True, returns the decrypted value for SecureString parameters.
+            If False, returns the ciphertext. Defaults to True for security.
 
     Returns:
         str: The value of the SSM parameter.
@@ -36,5 +38,5 @@ def get_ssm_parameter(name, session_config: dict | None = None, profile: str | N
         session_config = {}
 
     ssm = ssm_client or get_ssm_client(session_config, profile=profile)
-    value = ssm.get_parameter(Name=name)['Parameter']['Value']
+    value = ssm.get_parameter(Name=name, WithDecryption=with_decryption)['Parameter']['Value']
     return value
