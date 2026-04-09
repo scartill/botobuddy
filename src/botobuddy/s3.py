@@ -267,6 +267,12 @@ def json_dumper(d):
     return benedict.to_json(d, indent=2)
 
 
+def download(s3_cli: S3Client, s3_uri: S3Uri, local: Path):
+    s3_cli.download_file(
+        s3_uri.bucket, s3_uri.key, local.as_posix()
+    )
+
+
 def list_all_objects(
     s3_path: str | S3Uri,
     on_object: Callable[[dict], None],
