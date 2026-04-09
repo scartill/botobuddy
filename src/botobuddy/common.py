@@ -1,6 +1,5 @@
 from typing import Any
 
-import randomname
 import boto3
 from botocore.config import Config
 
@@ -41,7 +40,17 @@ def get_aws_session(session_config: dict | None = None, profile: str | None = No
     session = boto3.Session(**params)
 
     if assume_role := session_config.get('assume_role'):
-        session_name = randomname.get_name()
+        session_name = session_config.get('session_name') or 'botobuddy-session'
+        allowed_session_name_chars = set('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_=,.@-')
+
+        if not isinstance(session_name, str):
+            raise ValueError('session_name must be a string')
+        if len(session_name) > 64:
+            raise ValueError('session_name must be 64 characters or fewer')
+        if not session_name or any(char not in allowed_session_name_chars for char in session_name):
+            raise ValueError(
+                'session_name must be non-empty and contain only letters, numbers, and the characters _=,.@-'
+            )
         sts_client = session.client('sts')
 
         assumed_role_object = sts_client.assume_role(RoleArn=assume_role, RoleSessionName=session_name)
