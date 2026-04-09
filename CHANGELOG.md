@@ -1,3 +1,7 @@
+# 0.8.0
+
+- _Describe changes for this release._
+
 # 0.7.1
 
 - Sentinel security fix: Added input length limit to request body
