@@ -12,7 +12,7 @@
 **Learning:** Default behavior of cloud SDK APIs might favor operational continuity (e.g. returning ciphertext without KMS read permissions) over strict security by default (fail-secure). Wrappers around secrets fetching must enforce decryption to avoid silently degrading to ciphertext.
 **Prevention:** Always default `WithDecryption=True` when building wrappers around SSM `get_parameter`. Expose it as an optional override rather than forcing the caller to remember it.
 
-## 2025-02-14 - HTTP Parameter Pollution in API Gateway Lambda Integration
+## 2025-02-14 (Incident 2) - HTTP Parameter Pollution in API Gateway Lambda Integration
 **Vulnerability:** API Gateway payload properties (`pathParameters`, `queryStringParameters`, `body`) were being merged into a single dictionary in an unsafe order (Path -> Query -> Body). This allowed an attacker to inject payload fields (e.g., in the JSON body) that silently overwrote authoritative fields like `pathParameters` (which are typically mapped from the URL and evaluated by API Gateway/WAF for authorization or routing).
 **Learning:** Overwriting API path/query variables with untrusted body payload content causes Mass Assignment/Parameter Pollution vulnerabilities, potentially bypassing authorization and allowing Cross-Tenant access or unintended privilege escalation.
 **Prevention:** Always merge user-supplied payload parameters strictly in ascending order of trust boundary. Merging order MUST be: Body -> Query String -> Path Parameters, enforcing that URL path segments retain absolute precedence and remain untamperable via POST/PUT payloads.
