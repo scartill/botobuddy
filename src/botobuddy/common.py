@@ -19,6 +19,11 @@ def get_aws_session(session_config: dict | None = None, profile: str | None = No
 
     Returns:
         A boto3.Session object
+
+    Raises:
+        botocore.exceptions.ParamValidationError: If assume_role parameters (e.g. session_name)
+            fail botocore's built-in validation. Parameter validation for sts.assume_role is
+            delegated entirely to botocore.
     """
     if session_config is None:
         session_config = {}
