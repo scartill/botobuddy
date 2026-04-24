@@ -1,6 +1,15 @@
+# 0.9.0
+
+- Sentinel security fix: Fixed HTTP Parameter Pollution in Lambda request parsing (HIGH)
+- Scrutineer: Removed redundant parameter validation for `RoleSessionName`
+- Documentation: Improved `get_aws_session` docstring regarding validation delegation
+
 # 0.8.0
 
-- _Describe changes for this release._
+- Added S3 file download utility
+- Scrutineer: Removed unnecessary `randomname` dependency
+- Sentinel security fix: Fixed missing decryption in SSM parameter retrieval
+- Scrutineer: Removed unnecessary `argparse` usage in click CLI
 
 # 0.7.1
 
