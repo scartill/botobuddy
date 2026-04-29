@@ -134,7 +134,10 @@ def request_params(event):
             raise UserWarning('Invalid encoding in request body; expected UTF-8 text') from e
 
         try:
-            params.update(json.loads(body_text))
+            parsed_body = json.loads(body_text)
+            if not isinstance(parsed_body, dict):
+                raise UserWarning('JSON payload must be an object/dictionary')
+            params.update(parsed_body)
         except json.JSONDecodeError as e:
             raise UserWarning('Invalid JSON payload in request body') from e
 
