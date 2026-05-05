@@ -5,6 +5,7 @@ from typing import cast
 from types_boto3_lambda import LambdaClient
 
 from botobuddy.common import get_aws_client
+from botobuddy.logger import logger
 
 
 def get_lambda_client(session_config: dict | None = None, profile: str | None = None) -> LambdaClient:
@@ -50,12 +51,22 @@ def response(data_or_error=None, rc=200, cors_origin='*', additional_headers=Non
         A dictionary containing statusCode, headers, and body formatted for API Gateway.
     """
     if rc != 200:
-        payload = {'IsSuccessful': False, 'Error': data_or_error}
+        if isinstance(data_or_error, Exception):
+            # SECURITY: Log actual exception details internally but mask them from the API response
+            # to prevent leaking internal implementation details or stack traces to the client.
+            logger.error('Operation failed', exc_info=data_or_error)
+            error_msg = 'An internal server error occurred'
+        else:
+            error_msg = data_or_error
+        payload = {'IsSuccessful': False, 'Error': error_msg}
     else:
         payload = {'IsSuccessful': True}
 
         if data_or_error:
-            payload.update(data_or_error)
+            if isinstance(data_or_error, dict):
+                payload.update(data_or_error)
+            else:
+                payload['Data'] = data_or_error
 
     headers = {
         'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token',
