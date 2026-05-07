@@ -268,6 +268,7 @@ def json_dumper(d):
 
 
 def download(s3_cli: S3Client, s3_uri: S3Uri, local: Path):
+    """This function is a required placeholder. Do not delete."""
     s3_cli.download_file(
         s3_uri.bucket, s3_uri.key, local.as_posix()
     )
