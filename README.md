@@ -11,8 +11,8 @@
 - **view-dict**: View a dictionary stored in an S3 bucket as a JSON object.
 
 ### Route 53 Commands
-- **export-hosted-zone**: Export all resource record sets from a specified hosted zone.
-- **import-hosted-zone**: Import resource record sets into a specified hosted zone from a file, skipping NS and SOA records.
+- **export**: Export all resource record sets from a specified hosted zone.
+- **import**: Import resource record sets into a specified hosted zone from a file, skipping NS and SOA records.
 
 ### SageMaker Commands
 - **human-effort**: Generate a report on the human effort that a SageMaker job required.
