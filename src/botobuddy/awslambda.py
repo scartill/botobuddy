@@ -80,6 +80,8 @@ def response(data_or_error=None, rc=200, cors_origin='*', additional_headers=Non
     }
 
     if additional_headers:
+        if not isinstance(additional_headers, dict):
+            raise ValueError('additional_headers must be a dictionary')
         headers.update(additional_headers)
 
     return {
@@ -154,10 +156,14 @@ def request_params(event):
 
     qsParams = event.get('queryStringParameters')
     if qsParams:
+        if not isinstance(qsParams, dict):
+            raise UserWarning('queryStringParameters must be a dictionary')
         params.update(qsParams)
 
     pathParams = event.get('pathParameters')
     if pathParams:
+        if not isinstance(pathParams, dict):
+            raise UserWarning('pathParameters must be a dictionary')
         params.update(pathParams)
 
     return (method, params)
