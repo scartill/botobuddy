@@ -50,15 +50,15 @@ def response(data_or_error=None, rc=200, cors_origin='*', additional_headers=Non
     Returns:
         A dictionary containing statusCode, headers, and body formatted for API Gateway.
     """
-    if rc != 200:
-        if isinstance(data_or_error, Exception):
-            # SECURITY: Log actual exception details internally but mask them from the API response
-            # to prevent leaking internal implementation details or stack traces to the client.
-            logger.error('Operation failed', exc_info=data_or_error)
-            error_msg = 'An internal server error occurred'
-        else:
-            error_msg = data_or_error
+    if isinstance(data_or_error, Exception):
+        # SECURITY: Log actual exception details internally but mask them from the API response
+        # to prevent leaking internal implementation details or stack traces to the client.
+        logger.error('Operation failed', exc_info=data_or_error)
+        error_msg = 'An internal server error occurred'
+        rc = 500 if rc == 200 else rc
         payload = {'IsSuccessful': False, 'Error': error_msg}
+    elif rc != 200:
+        payload = {'IsSuccessful': False, 'Error': data_or_error}
     else:
         payload = {'IsSuccessful': True}
 
