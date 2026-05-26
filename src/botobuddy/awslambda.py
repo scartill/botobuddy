@@ -50,15 +50,16 @@ def response(data_or_error=None, rc=200, cors_origin='*', additional_headers=Non
     Returns:
         A dictionary containing statusCode, headers, and body formatted for API Gateway.
     """
+    if isinstance(data_or_error, Exception):
+        # SECURITY: Log actual exception details internally but mask them from the API response
+        # to prevent leaking internal implementation details or stack traces to the client.
+        logger.error('Operation failed', exc_info=data_or_error)
+        data_or_error = 'An internal server error occurred'
+        if rc == 200:
+            rc = 500
+
     if rc != 200:
-        if isinstance(data_or_error, Exception):
-            # SECURITY: Log actual exception details internally but mask them from the API response
-            # to prevent leaking internal implementation details or stack traces to the client.
-            logger.error('Operation failed', exc_info=data_or_error)
-            error_msg = 'An internal server error occurred'
-        else:
-            error_msg = data_or_error
-        payload = {'IsSuccessful': False, 'Error': error_msg}
+        payload = {'IsSuccessful': False, 'Error': data_or_error}
     else:
         payload = {'IsSuccessful': True}
 
@@ -67,6 +68,9 @@ def response(data_or_error=None, rc=200, cors_origin='*', additional_headers=Non
                 payload.update(data_or_error)
             else:
                 payload['Data'] = data_or_error
+
+    if cors_origin == '*':
+        logger.warning("SECURITY WARNING: Overly permissive CORS configuration (Access-Control-Allow-Origin: *). Consider restricting it in production.")
 
     headers = {
         'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token',
