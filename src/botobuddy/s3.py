@@ -466,7 +466,7 @@ def sync_folder_from_s3(
     logger.debug(f'Listing objects in {s3_uri}')
 
     s3_client = get_s3_client(session_config, profile=profile)
-    for obj in list_all_objects(s3_uri, s3_client=s3_client, profile=profile):
+    for obj in list_all_objects(s3_uri, s3_client=s3_client):
         key = obj['Key']
         relative_path = Path(key).relative_to(s3_uri.path)
 
