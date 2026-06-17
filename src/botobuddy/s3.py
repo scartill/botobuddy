@@ -1,6 +1,6 @@
 import os
 import tempfile
-from typing import Callable, Any, cast
+from typing import Any, cast
 from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -147,10 +147,8 @@ def ls_cmd(obj, s3_path):
     """
     client = get_s3_client(obj)
 
-    def print_object(item):
+    for item in list_all_objects(s3_path, s3_client=client):
         logger.info(item['Key'])  # type: ignore
-
-    list_all_objects(s3_path, print_object, s3_client=client)
 
 
 @s3_group.command(name='view-dict')
@@ -276,17 +274,15 @@ def download(s3_cli: S3Client, s3_uri: S3Uri, local: Path):
 
 def list_all_objects(
     s3_path: str | S3Uri,
-    on_object: Callable[[dict], None],
     *,
     s3_client: S3Client | None = None,
     session_config: dict | None = None,
     profile: str | None = None
 ):
-    """List all objects in an S3 bucket and call on_object for each.
+    """List all objects in an S3 bucket.
 
     Args:
         s3_path: The S3 path or S3Uri to list.
-        on_object: A callback function called with each object dictionary.
         s3_client: Optional S3 client.
         session_config: Optional AWS session configuration.
         profile: Explicit AWS profile name. Takes precedence over session_config['profile'].
@@ -308,9 +304,8 @@ def list_all_objects(
     )
 
     for page in page_iterator:
-        if 'Contents' in page:
-            for obj in page['Contents']:
-                on_object(dict(obj))
+        for obj in page.get('Contents', []):
+            yield dict(obj)
 
 
 def delete_bucket_contents(client, bucket_name):
@@ -470,23 +465,21 @@ def sync_folder_from_s3(
 
     logger.debug(f'Listing objects in {s3_uri}')
 
-    def on_object(obj):
+    s3_client = get_s3_client(session_config, profile=profile)
+    for obj in list_all_objects(s3_uri, s3_client=s3_client, profile=profile):
         key = obj['Key']
         relative_path = Path(key).relative_to(s3_uri.path)
 
         if not recursive and relative_path.parent != Path('.'):
-            return
+            continue
 
         local_path = (local_dir / relative_path).resolve()
 
         if not local_path.is_relative_to(local_dir.resolve()):
             logger.warning(f"Skipping {key} due to path traversal attempt outside {local_dir}")
-            return # Skip this file and return early from on_object
+            continue
 
         targets.append((s3_uri.bucket, key, local_path))
-
-    s3_client = get_s3_client(session_config, profile=profile)
-    list_all_objects(s3_uri, on_object, s3_client=s3_client, profile=profile)
 
     if not targets:
         logger.debug(f'No files found in {s3_uri}')
