@@ -126,13 +126,9 @@ def delete_bucket_cmd(obj, bucket_name):
         obj (dict): Global Click configuration object.
         bucket_name (str): The name of the S3 bucket to delete.
     """
-    try:
-        client = get_s3_client(obj)
-        delete_bucket_contents(client, bucket_name)
-        delete_bucket(client, bucket_name)
-
-    except Exception as e:
-        raise UserWarning(f'Error deleting bucket {bucket_name} {e}') from e
+    client = get_s3_client(obj)
+    delete_bucket_contents(client, bucket_name)
+    delete_bucket(client, bucket_name)
 
 
 @s3_group.command(name='ls')
