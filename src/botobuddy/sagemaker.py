@@ -231,25 +231,22 @@ def get_sub_to_email_mapping(user_pool_id: str, session_config: dict | None = No
     client = get_cognito_client(session_config, profile=profile)
     sub_email_map = {}
 
-    try:
-        paginator = client.get_paginator('list_users')
-        for page in paginator.paginate(UserPoolId=user_pool_id):
-            for user_entry in page.get('Users', []):
-                username = user_entry.get('Username')
-                sub = None
+    paginator = client.get_paginator('list_users')
+    for page in paginator.paginate(UserPoolId=user_pool_id):
+        for user_entry in page.get('Users', []):
+            username = user_entry.get('Username')
+            sub = None
 
-                # Find the 'sub' attribute in the UserAttributes list
-                for attr in user_entry.get('Attributes', []):
-                    if attr['Name'] == 'sub':
-                        sub = attr['Value']  # type: ignore
-                        break  # Found the sub, no need to check other attributes for this user
+            # Find the 'sub' attribute in the UserAttributes list
+            for attr in user_entry.get('Attributes', []):
+                if attr['Name'] == 'sub':
+                    sub = attr['Value']  # type: ignore
+                    break  # Found the sub, no need to check other attributes for this user
 
-                if sub and username:
-                    sub_email_map[sub] = username
-                elif sub:
-                    print(f"Warning: User with sub '{sub}' found but no Username (email) to map.")
+            if sub and username:
+                sub_email_map[sub] = username
+            elif sub:
+                print(f"Warning: User with sub '{sub}' found but no Username (email) to map.")
 
-        return sub_email_map
+    return sub_email_map
 
-    except Exception as e:
-        raise UserWarning(f"Error: User Pool with ID '{user_pool_id}' not found.") from e
